@@ -1,5 +1,5 @@
-name: Generate boats result for Transat Cafe L'Or 2025
-run-name: Boats result generation for Transat Cafe L'Or 2025 🚀
+name: Generate boats result
+run-name: Boats result generation
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
