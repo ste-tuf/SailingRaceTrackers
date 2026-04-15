@@ -1,5 +1,5 @@
-name: Generate boats result for Transat Cafe L'Or 2025
-run-name: Boats result generation for Transat Cafe L'Or 2025 🚀
+name: Generate boats result for Cap Martinique 2026
+run-name: Boats result generation for Cap Martinique 2026
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -11,10 +11,10 @@ jobs:
   Download-reports:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out prod-transatcafelor-2025
+      - name: Check out prod-capmartinique-2026
         uses: actions/checkout@v4
         with:
-          ref: prod-transatcafelor-2025
+          ref: prod-capmartinique-2026
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
