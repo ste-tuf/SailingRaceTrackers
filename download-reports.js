@@ -70,9 +70,9 @@ var UInt8Array = function (input) {
 
 // ================================ CONSTANTS =================================
 
-const geovoileHostname = 'transatcafelor.geovoile.com';
-const resourcesBasePath = '/2025/resources/versions/';
-const trackerBasePath = '/2025/tracker/resources/';
+const geovoileHostname = 'cap-martinique.geovoile.com/';
+const resourcesBasePath = '/2026/resources/versions/';
+const trackerBasePath = '/2026/tracker/resources/';
 
 // ================================== UTILS ===================================
 
