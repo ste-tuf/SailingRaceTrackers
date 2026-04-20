@@ -146,11 +146,17 @@ getTracksVersion(function (tracksVersion) {
 });
 
 // Download config
-//getConfigVersion(function (configVersion) {
-//	let configPath = trackerBasePath + 'config/v' + configVersion;
-//	downloadReport(configPath, function (reportData) {
-//		fs.writeFile('./config.json', reportData, err => {
-//			if (err) { handleError(err) }
-//		});
-//	});
-//});
+getConfigVersion(function (configVersion) {
+    let configPath = trackerBasePath + 'config/v' + configVersion;
+    downloadReport(configPath, function (reportData) {
+        fs.access('./config.json', fs.constants.F_OK, (err) => {
+            if (err) {
+                fs.writeFile('./config.json', reportData, err => {
+                    if (err) { handleError(err); }
+                });
+            } else {
+                console.log('File already exists, skipping write.');
+            }
+        });
+    });
+});
