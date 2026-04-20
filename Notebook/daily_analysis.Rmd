@@ -1,0 +1,634 @@
+---
+title: "Daily Race Analysis Report"
+author: "SailingRaceTrackers"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# ============================================================================
+# SETUP - Package Loading and Configuration
+# ============================================================================
+
+suppressPackageStartupMessages({
+    if (!require("xml2", quietly = TRUE)) {
+        install.packages("xml2", repos = "https://cloud.r-project.org")
+    }
+    library(xml2)
+    
+    if (!require("jsonlite", quietly = TRUE)) {
+        install.packages("jsonlite", repos = "https://cloud.r-project.org")
+    }
+    library(jsonlite)
+    
+    if (!require("tidyverse", quietly = TRUE)) {
+        install.packages("tidyverse", repos = "https://cloud.r-project.org")
+    }
+    library(tidyverse)
+    
+    if (!require("lubridate", quietly = TRUE)) {
+        install.packages("lubridate", repos = "https://cloud.r-project.org")
+    }
+    library(lubridate)
+    
+    if (!require("geodist", quietly = TRUE)) {
+        install.packages("geodist", repos = "https://cloud.r-project.org")
+    }
+    library(geodist)
+})
+
+options(digits = 3, warning = FALSE)
+```
+
+```{r config, include=FALSE}
+# ============================================================================
+# CONFIGURATION - User Settings
+# ============================================================================
+
+# Target boat to track (specify boat name or ID)
+TARGET_BOAT <- "tuftuftuf"  # CHANGE THIS: boat name or ID to track in detail
+
+# Race to analyze (NULL = all)
+TARGET_CATEGORY <- "Figaro 2"  # CHANGE THIS: NULL or specific class
+
+# Polar file path (optional - will estimate if not provided)
+POLAR_FILE <- NULL  # "polars_figaro2.csv"
+
+# Data paths
+CONFIG_FILE <- "../config.xml"
+RESULTS_FILE <- "../boats_result.json"
+BOATINFO_FILE <- "boatinfo.json"
+
+# Analysis parameters
+MANEUVER_ANGLE_THRESHOLD <- 30  # degrees to count as maneuver
+TRACK_SAMPLE_RATE <- 10  # sample every N points for performance
+```
+
+```{r functions-core, include=FALSE}
+# ============================================================================
+# FUNCTIONS - Core Data Loading
+# ============================================================================
+
+#' Load race configuration XML
+#' @param path Path to config.xml
+#' @return Parsed XML document
+load_config <- function(path = CONFIG_FILE) {
+    if (!file.exists(path)) {
+        stop("Config file not found: ", path)
+    }
+    read_xml(path)
+}
+
+#' Load race results JSON
+#' @param path Path to boats_result.json
+#' @return List with results
+load_results <- function(path = RESULTS_FILE) {
+    if (!file.exists(path)) {
+        stop("Results file not found: ", path)
+    }
+    fromJSON(path)
+}
+
+#' Load boat info JSON (or extract from config)
+#' @param path Path to boatinfo.json
+#' @param config_xml Optional config XML to extract from
+#' @return List with boat information
+load_boat_info <- function(path = BOATINFO_FILE, config_xml = NULL) {
+    if (file.exists(path)) {
+        fromJSON(path)
+    } else if (!is.null(config_xml)) {
+        extract_boats_from_config(config_xml)
+    } else {
+        stop("No boat info source available")
+    }
+}
+
+#' Extract boat information from config XML
+#' @param config_xml Parsed XML document
+#' @return List indexed by boat ID
+extract_boats_from_config <- function(config_xml) {
+    boat_classes <- xml_find_all(config_xml, ".//boats/boat-class")
+    
+    boat_info <- list()
+    
+    for (bc in boat_classes) {
+        category <- xml_attr(bc, "name")
+        boats <- xml_find_all(bc, ".//boat")
+        
+        for (boat in boats) {
+            boat_id <- as.integer(xml_attr(boat, "id"))
+            boat_name <- xml_attr(boat, "name")
+            
+            navigators <- xml_find_all(boat, ".//crew/navigator")
+            skippers <- sapply(navigators, function(nav) {
+                paste(xml_attr(nav, "fname"), xml_attr(nav, "lname"), sep = "_")
+            })
+            
+            boat_info[[as.character(boat_id)]] <- list(
+                boatName = boat_name,
+                skipperNames = paste(skippers, collapse = "_&_"),
+                category = category
+            )
+        }
+    }
+    return(boat_info)
+}
+
+#' Extract race metadata
+#' @param config_xml Parsed XML
+#' @return List with metadata
+extract_metadata <- function(config_xml) {
+    config <- xml_find_first(config_xml, ".//config")
+    
+    list(
+        name = xml_attr(config, "name"),
+        category = xml_attr(config, "category"),
+        state = xml_attr(config, "state"),
+        date = xml_attr(config, "date"),
+        leg_start = xml_attr(xml_find_first(config, ".//leg"), "start"),
+        leg_arrival = xml_attr(xml_find_first(config, ".//leg"), "arrival"),
+        leg_num = as.integer(xml_attr(xml_find_first(config, ".//leg"), "num"))
+    )
+}
+
+#' Extract route waypoints
+#' @param config_xml Parsed XML
+#' @return List of route segments
+extract_routes <- function(config_xml) {
+    routes <- xml_find_all(config_xml, ".//leg/route")
+    
+    route_list <- lapply(routes, function(r) {
+        route_text <- xml_text(r)
+        waypoints <- strsplit(route_text, ";")[[1]]
+        
+        wp_df <- do.call(rbind, lapply(waypoints, function(wp) {
+            coords <- strsplit(wp, ",")[[1]]
+            data.frame(lat = as.numeric(coords[1]), lon = as.numeric(coords[2]))
+        }))
+        
+        wp_df$order <- seq_len(nrow(wp_df))
+        list(id = xml_attr(r, "id"), waypoints = wp_df)
+    })
+    
+    return(route_list)
+}
+```
+
+```{r functions-track, include=FALSE}
+# ============================================================================
+# FUNCTIONS - Track Analysis (Maneuvers, Polars)
+# ============================================================================
+
+#' Calculate heading between two points
+#' @param lat1, lon1 Point 1
+#' @param lat2, lon2 Point 2
+#' @return Heading in degrees (0-360)
+calculate_heading <- function(lat1, lon1, lat2, lon2) {
+    lat1 <- lat1 * pi / 180
+    lat2 <- lat2 * pi / 180
+    dlon <- (lon2 - lon1) * pi / 180
+    
+    y <- sin(dlon) * cos(lat2)
+    x <- cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dlon)
+    
+    heading <- atan2(y, x) * 180 / pi
+    heading %% 360
+}
+
+#' Count maneuvers from track
+#' @param track Matrix/dataframe with lat, lon columns
+#' @param threshold Angle threshold in degrees
+#' @return List with maneuver counts and details
+analyze_maneuvers <- function(track, threshold = MANEUVER_ANGLE_THRESHOLD) {
+    if (is.null(track) || nrow(track) < 3) {
+        return(list(
+            total_maneuvers = 0,
+            tacks = 0,
+            gybes = 0,
+            maneuvers_detail = data.frame()
+        ))
+    }
+    
+    # Sample track for performance
+    n_points <- min(nrow(track), TRACK_SAMPLE_RATE * 10)
+    idx <- seq(1, nrow(track), length.out = n_points)
+    track <- track[idx, ]
+    
+    # Calculate headings
+    headings <- sapply(2:nrow(track), function(i) {
+        calculate_heading(track[i-1, 1], track[i-1, 2], track[i, 1], track[i, 2])
+    })
+    
+    # Calculate heading changes
+    heading_changes <- diff(headings)
+    heading_changes <- ifelse(heading_changes > 180, heading_changes - 360, heading_changes)
+    heading_changes <- ifelse(heading_changes < -180, heading_changes + 360, heading_changes)
+    
+    # Identify maneuvers
+    abs_changes <- abs(heading_changes)
+    maneuver_idx <- which(abs_changes >= threshold)
+    
+    # Classify: tacks (upwind, >45 left) vs gybes (downwind, >45 right)
+    tacks <- sum(heading_changes[maneuver_idx] < -threshold & abs_changes[maneuver_idx] > 45)
+    gybes <- sum(heading_changes[maneuver_idx] > threshold & abs_changes[maneuver_idx] > 45)
+    
+    list(
+        total_maneuvers = length(maneuver_idx),
+        tacks = tacks,
+        gybes = gybes,
+        heading_changes = heading_changes,
+        maneuver_indices = maneuver_idx
+    ))
+}
+
+#' Estimate polar from track data
+#' @param track GPS track matrix
+#' @param wind_direction Approximate wind direction (degrees)
+#' @param sample_size Number of points to analyze
+#' @return Data frame with estimated polar
+estimate_polar <- function(track, wind_direction = NULL, sample_size = 500) {
+    if (is.null(track) || nrow(track) < 50) {
+        return(NULL)
+    }
+    
+    # Sample track
+    n <- min(nrow(track), sample_size)
+    idx <- seq(1, nrow(track), length.out = n)
+    track <- track[idx, ]
+    
+    # Calculate speeds and headings
+    speeds <- c()
+    twa <- c()
+    
+    for (i in 2:(nrow(track) - 1)) {
+        dist <- geodist::geodist(
+            c(track[i-1, 1], track[i, 1]),
+            c(track[i-1, 2], track[i, 2]),
+            pairwise = TRUE
+        ) * 0.539957  # km to nm
+        
+        time_diff <- 1  # assume 1 hour between points
+        speed <- dist / time_diff
+        
+        if (speed > 2 && speed < 25) {  # reasonable speed range
+            heading <- calculate_heading(track[i-1, 1], track[i-1, 2], track[i, 1], track[i, 2])
+            
+            if (!is.null(wind_direction)) {
+                twa_angle <- abs(heading - wind_direction)
+                twa_angle <- min(twa_angle, 360 - twa_angle)
+            } else {
+                twa_angle <- NA
+            }
+            
+            speeds <- c(speeds, speed)
+            twa <- c(twa, twa_angle)
+        }
+    }
+    
+    if (length(speeds) < 10) {
+        return(NULL)
+    }
+    
+    data.frame(
+        speed_knots = speeds,
+        twa = twa,
+        heading = NA
+    )
+}
+
+#' Calculate polar efficiency
+#' @param actual_polar Data frame from estimate_polar
+#' @param theoretical_polar Reference polar data (optional)
+#' @param wind_direction Wind direction
+#' @return Efficiency percentage
+calculate_polar_efficiency <- function(actual_polar, theoretical_polar = NULL, wind_direction) {
+    if (is.null(actual_polar) || nrow(actual_polar) < 10) {
+        return(NULL)
+    }
+    
+    # Calculate TWA angles
+    twa_bins <- cut(actual_polar$twa, breaks = c(0, 30, 45, 60, 90, 110, 135, 180),
+                 labels = c("0-30", "30-45", "45-60", "60-90", "90-110", "110-135", "135-180"))
+    
+    efficiency <- actual_polar %>%
+        mutate(twa_bin = twa_bins) %>%
+        group_by(twa_bin) %>%
+        summarise(
+            avg_speed = mean(speed_knots),
+            max_speed = max(speed_knots),
+            n_points = n(),
+            .groups = "drop"
+        )
+    
+    return(efficiency)
+}
+
+#' Calculate VMG (Velocity Made Good) to a target
+#' @param track GPS track
+#' @param target_lat, target_lon Target coordinates
+#' @return VMG in knots
+calculate_vmg <- function(track, target_lat, target_lon) {
+    if (is.null(track) || nrow(track) < 2) {
+        return(NA)
+    }
+    
+    # Use last position
+    last_lat <- tail(track[, 1], 1)
+    last_lon <- tail(track[, 2], 1)
+    
+    # Bearing to target
+    bearing <- calculate_heading(last_lat, last_lon, target_lat, target_lon)
+    
+    # Current speed (assuming last observation)
+    # Estimate from last few points
+    if (nrow(track) >= 2) {
+        last_dist <- geodist::geodist(
+            track[nrow(track)-1, 1], track[nrow(track)-1, 2],
+            last_lat, last_lon,
+            pairwise = TRUE
+        ) * 0.539957
+        
+        # VMG = speed * cos(heading - bearing)
+        vmg <- NA  # Would need current speed
+        return(vmg)
+    }
+    
+    return(NA)
+}
+
+#' Calculate track efficiency (actual vs direct distance)
+#' @param track GPS track
+#' @return Efficiency ratio
+calculate_track_efficiency <- function(track) {
+    if (is.null(track) || nrow(track) < 2) {
+        return(NA)
+    }
+    
+    # Actual distance traveled
+    actual_dist <- 0
+    for (i in 2:nrow(track)) {
+        actual_dist <- actual_dist + geodist::geodist(
+            track[i-1, 1], track[i-1, 2],
+            track[i, 1], track[i, 2],
+            pairwise = TRUE
+        ) * 0.539957
+    }
+    
+    # Direct distance (start to finish)
+    direct_dist <- geodist::geodist(
+        track[1, 1], track[1, 2],
+        tail(track[, 1], 1), tail(track[, 2], 1),
+        pairwise = TRUE
+    ) * 0.539957
+    
+    if (direct_dist < 1) return(NA)
+    
+    return(direct_dist / actual_dist)
+}
+```
+
+```{r functions-enrich, include=FALSE}
+# ============================================================================
+# FUNCTIONS - Data Enrichment and Analysis
+# ============================================================================
+
+#' Enrich raw results with boat info and calculated metrics
+#' @param results Raw results list
+#' @param boat_info Boat info list
+#' @return Data frame with all metrics
+enrich_results <- function(results, boat_info) {
+    result_df <- as.data.frame(results$result)
+    result_df <- tibble::rownames_to_column(result_df, "boat_id")
+    result_df$boat_id <- as.integer(result_df$boat_id)
+    
+    # Add boat info
+    boats_df <- lapply(names(boat_info), function(id) {
+        data.frame(
+            boat_id = as.integer(id),
+            boat_name = boat_info[[id]]$boatName,
+            skipper_names = boat_info[[id]]$skipperNames,
+            category = boat_info[[id]]$category
+        )
+    }) %>% do.call(rbind, .)
+    
+    # Merge
+    merged <- merge(result_df, boats_df, by = "boat_id", all.x = TRUE)
+    
+    # Calculate additional metrics
+    merged <- merged %>%
+        mutate(
+            dtf_dtl_ratio = dtf / (dtl + 0.1),
+            speed_rank = rank(-speed),
+            distance_rank = rank(-`24hour_distance`)
+        )
+    
+    return(merged)
+}
+
+#' Get leaderboard
+#' @param df Enriched data frame
+#' @param n Number of boats
+#' @return Ordered data frame
+get_leaderboard <- function(df, n = 15) {
+    df %>% arrange(rank) %>% head(n) %>%
+        select(boat_id, boat_name, rank, heading, speed, dtf, dtl, category)
+}
+
+#' Get category statistics
+#' @param df Enriched data frame
+#' @return Summary by category
+get_category_stats <- function(df) {
+    df %>%
+        group_by(category) %>%
+        summarise(
+            n = n(),
+            avg_speed = mean(speed, na.rm = TRUE),
+            max_speed = max(speed, na.rm = TRUE),
+            avg_24h = mean(`24hour_distance`, na.rm = TRUE),
+            max_24h = max(`24hour_distance`, na.rm = TRUE),
+            avg_dtf = mean(dtf, na.rm = TRUE),
+            .groups = "drop"
+        ) %>% arrange(desc(n))
+}
+
+#' Get specific boat analysis
+#' @param df Enriched data frame
+#' @param boat_name Boat name to find
+#' @return Detailed boat data
+get_boat_detail <- function(df, boat_name) {
+    # Search by name or ID
+    boat_name_lower <- tolower(boat_name)
+    
+    df %>%
+        filter(
+            tolower(boat_name) == tolower(boat_name) |
+            tolower(boat_name) == tolower(boat_name) |
+            boat_id == as.integer(boat_name)
+        )
+}
+```
+
+```{r data-loading, include=FALSE}
+# ============================================================================
+# DATA LOADING
+# ============================================================================
+
+data_loaded <- FALSE
+results_enriched <- NULL
+
+tryCatch({
+    config <- load_config(CONFIG_FILE)
+    results <- load_results(RESULTS_FILE)
+    boat_info <- load_boat_info(BOATINFO_FILE, config)
+    
+    # Extract metadata
+    metadata <- extract_metadata(config)
+    routes <- extract_routes(config)
+    
+    # Enrich results
+    results_enriched <- enrich_results(results, boat_info)
+    
+    # Run track analysis for each boat
+    for (bid in names(results$result)) {
+        track_data <- results$result[[bid]]$track
+        if (!is.null(track_data) && is.data.frame(track_data)) {
+            # Analyze maneuvers
+            maneuvers <- analyze_maneuvers(track_data)
+            results_enriched$total_maneuvers[results_enriched$boat_id == as.integer(bid)] <- maneuvers$total_maneuvers
+            results_enriched$tacks[results_enriched$boat_id == as.integer(bid)] <- maneuvers$tacks
+            results_enriched$gybes[results_enriched$boat_id == as.integer(bid)] <- maneuvers$gybes
+            
+            # Track efficiency
+            results_enriched$track_efficiency[results_enriched$boat_id == as.integer(bid)] <- calculate_track_efficiency(track_data)
+        }
+    }
+    
+    data_loaded <- TRUE
+    
+    cat("Data loaded successfully.\n")
+    cat("Total boats:", nrow(results_enriched), "\n")
+    cat("Categories:", paste(unique(results_enriched$category), collapse = ", "), "\n")
+    
+}, error = function(e) {
+    cat("Error loading data:", conditionMessage(e), "\n")
+})
+```
+
+# Race Overview
+
+```{r overview, echo=FALSE, results='asis', eval=data_loaded}
+cat("## ", metadata$name, "\n\n", sep = "")
+cat("**Category:**", metadata$category, "\n\n")
+cat("**State:**", metadata$state, "\n\n")
+cat("**Date:**", metadata$date, "\n\n")
+cat("**Route:**", metadata$leg_start, "→", metadata$leg_arrival, "\n\n")
+cat("**Leg:**", metadata$leg_num, "\n\n")
+
+cat("### Fleet Summary\n")
+stats <- get_category_stats(results_enriched)
+print(stats)
+```
+
+# Target Boat Analysis: `r TARGET_BOAT`
+
+```{r target-boat, echo=FALSE, results='asis', eval=data_loaded}
+target_data <- get_boat_detail(results_enriched, TARGET_BOAT)
+
+if (nrow(target_data) == 0) {
+    cat("Boat '", TARGET_BOAT, "' not found.\n", sep = "")
+    cat("Available boats:\n")
+    cat(paste(unique(results_enriched$boat_name), collapse = "\n"))
+} else {
+    cat("### Boat Information\n")
+    cat("**Name:**", target_data$boat_name, "\n\n")
+    cat("**Skipper(s):**", target_data$skipper_names, "\n\n")
+    cat("**Class:**", target_data$category, "\n\n")
+    cat("**Current Rank:**", target_data$rank, "\n\n")
+    
+    cat("### Performance\n")
+    cat("- **Speed:**", target_data$speed, "knots\n")
+    cat("- **Heading:**", target_data$heading, "°\n")
+    cat("- **24h Distance:**", target_data$`24hour_distance`, "nm\n")
+    
+    cat("\n### Race Position\n")
+    cat("- **DTF:**", target_data$dtf, "nm\n")
+    cat("- **DTL:**", target_data$dtl, "nm\n")
+    cat("- **DTP:**", target_data$dtp, "nm\n")
+    
+    cat("\n### Track Analysis\n")
+    cat("- **Total Maneuvers:**", target_data$total_maneuvers, "\n")
+    cat("- **Tacks:**", target_data$tacks, "\n")
+    cat("- **Gybes:**", target_data$gybes, "\n")
+    cat("- **Track Efficiency:**", round(target_data$track_efficiency * 100, 1), "%\n")
+}
+```
+
+# Leaderboard
+
+```{r leaderboard, echo=FALSE, results='asis', eval=data_loaded}
+cat("### Top 15 - Overall Ranking\n\n")
+lb <- get_leaderboard(results_enriched, 15)
+print(lb)
+```
+
+# Category Comparison
+
+```{r category-comparison, echo=FALSE, results='asis', eval=data_loaded}
+cat("### Performance by Class\n\n")
+cat_stats <- get_category_stats(results_enriched)
+print(cat_stats)
+```
+
+## Category Analysis
+
+### Speed Distribution
+
+```{r speed-plot, echo=FALSE, eval=data_loaded}
+if (data_loaded) {
+    p <- ggplot(results_enriched, aes(x = category, y = speed, fill = category)) +
+        geom_boxplot() +
+        labs(title = "Speed Distribution by Class", x = "Class", y = "Speed (knots)") +
+        theme_minimal() +
+        theme(legend.position = "none", axis.text.x = element_text(angle = 45))
+    print(p)
+}
+```
+
+### 24-Hour Distance
+
+```{r distance-plot, echo=FALSE, eval=data_loaded}
+if (data_loaded) {
+    p <- ggplot(results_enriched, aes(x = category, y = `24hour_distance`, fill = category)) +
+        geom_boxplot() +
+        labs(title = "24-Hour Distance by Class", x = "Class", y = "Distance (nm)") +
+        theme_minimal() +
+        theme(legend.position = "none", axis.text.x = element_text(angle = 45))
+    print(p)
+}
+```
+
+# Daily Summary
+
+```{r summary, echo=FALSE, results='asis', eval=data_loaded}
+n_boats <- nrow(results_enriched)
+avg_speed <- mean(results_enriched$speed, na.rm = TRUE)
+max_speed <- max(results_enriched$speed, na.rm = TRUE)
+avg_24h <- mean(results_enriched$`24hour_distance`, na.rm = TRUE)
+max_24h <- max(results_enriched$`24hour_distance`, na.rm = TRUE)
+avg_maneuvers <- mean(results_enriched$total_maneuvers, na.rm = TRUE)
+
+cat("### Race Summary\n\n")
+cat("**Generated:**", as.character(Sys.time()), "\n\n")
+cat("**Total Boats:**", n_boats, "\n\n")
+
+cat("### Performance Metrics\n")
+cat("- Average Speed:", round(avg_speed, 1), "knots\n")
+cat("- Max Speed:", round(max_speed, 1), "knots\n")
+cat("- Average 24h Distance:", round(avg_24h, 1), "nm\n")
+cat("- Max 24h Distance:", round(max_24h, 1), "nm\n")
+cat("- Average Maneuvers:", round(avg_maneuvers, 0), "\n")
+```
+
+---
+
+*Report generated automatically by SailingRaceTrackers*
