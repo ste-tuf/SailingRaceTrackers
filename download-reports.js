@@ -129,33 +129,39 @@ function downloadReport(path, callback) {
 let boatsVersion = Math.floor(new Date().getTime() / 1000 / 5) * 5;
 let boatsPath = trackerBasePath + 'live/v' + boatsVersion;
 
+console.log('Downloading boats...');
 downloadReport(boatsPath, function (reportData) {
 	fs.writeFile('./boats.json', reportData, err => {
 		if (err) { handleError(err) }
+		console.log('boats.json saved');
 	});
 });
 
 // Download tracks
 getTracksVersion(function (tracksVersion) {
+	console.log('Downloading tracks...');
 	let tracksPath = trackerBasePath + 'tracks/v' + tracksVersion;
 	downloadReport(tracksPath, function (reportData) {
 		fs.writeFile('./tracks.json', reportData, err => {
 			if (err) { handleError(err) }
+			console.log('tracks.json saved');
 		});
 	});
 });
 
 // Download config
 getConfigVersion(function (configVersion) {
+    console.log('Downloading config...');
     let configPath = trackerBasePath + 'config/v' + configVersion;
     downloadReport(configPath, function (reportData) {
         fs.access('./config.json', fs.constants.F_OK, (err) => {
             if (err) {
                 fs.writeFile('./config.json', reportData, err => {
                     if (err) { handleError(err); }
+                    console.log('config.json saved');
                 });
             } else {
-                console.log('File already exists, skipping write.');
+                console.log('config.json already exists, skipping');
             }
         });
     });
