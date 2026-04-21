@@ -1,549 +1,320 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<config name="Transat Café l'Or 2025" category="multiclass real" state="RUNNING" date="2025-10-25T14:30:00Z">
-  <leg num="1" order="1" pro="0" post="0" total="1" start="Le Havre" arrival="Fort de France">
-    <route>49.55394,0.0503;49.47247,0.02679;49.42495,-0.12059;49.54752,-0.57631;49.77232,-1.80389;48.74011,-4.89489;45.20541,-7.71057;43.38512,-8.3806|43.38512,-8.3806;43.6254,-10.70406;41.23902,-16.87529;36.77557,-24.82145;25.79658,-43.75724;18.78742,-54.17894;16.41306,-57.69007;14.78561,-60.02261;14.37196,-60.78247;14.39513,-60.95773;14.44363,-61.02503;14.44687,-61.06266;14.45297,-61.08795;14.49806,-61.10253;14.54776,-61.09429;14.58838,-61.08224|49.55394,0.0503;49.47247,0.02679;49.42562,-0.13871;49.54752,-0.57631;49.75942,-1.39959;49.58749,-3.18597;48.79932,-4.77679;48.22236,-5.60361;47.02065,-6.69521;42.54297,-9.65026;36.46457,-11.25168;31.99224,-12.35544;28.50541,-13.29198;27.2682,-15.95918;26.62845,-24.82774;22.31941,-40.81114;16.50855,-55.45438;14.85145,-59.45603;14.38358,-60.65126;14.43288,-61.00954;14.44591,-61.07755;14.49321,-61.10227;14.53974,-61.09648;14.58838,-61.08224|49.52349,-0.0641;49.7826,-1.68615;49.57171,-4.41796;48.84568,-7.88196;47.64424,-10.00274;44.36478,-11.23018;35.39391,-12.02752;28.26919,-13.08681;24.3522,-17.07208;16.67421,-20.87317;13.9607,-23.62576;14.90692,-29.90712;16.02177,-45.24226;15.48877,-55.16567;14.82574,-58.82145;14.4717,-60.24689;14.33523,-60.75804;14.3736,-60.95719;14.4448,-61.03128;14.44651,-61.08003;14.49116,-61.10181;14.53209,-61.09868;14.58838,-61.08224|49.55394,0.0503;49.47247,0.02679;49.42562,-0.13871;49.54752,-0.57631;49.76893,-1.39332;49.60829,-4.17254;48.12269,-10.92236;41.04292,-17.95467;20.95712,-25.40413;8.7161,-27.90388;1.44373,-28.8505;0.7516,-30.98069;4.58149,-40.48656;8.31082,-48.61515;12.05786,-56.66274;13.96473,-60.44118;14.42431,-61.08611;14.51264,-61.10325;14.58838,-61.08224</route>
+<config name="Cap Martinique" category="multiclass corrected" state="RUNNING" date="2026-04-20T15:00:00Z">
+  <leg num="1" order="1" pro="0" post="0" total="1" start="La Trinité sur mer" arrival="Fort de France">
+    <route>47.54798,-3.01746;47.40362,-2.85674;46.98991,-2.4916;45.81583,-1.53209;45.35105,-2.00902;44.654,-5.68353;43.5132,-9.07528;42.04969,-10.04579;38.68616,-12.27139;36.51752,-13.79907;33.24112,-16.02468;32.90104,-17.58501;30.94185,-24.56785;25.4719,-40.09479;17.17193,-56.26024;14.82784,-60.11478;14.47018,-60.66156;14.37144,-60.87724;14.45576,-61.09449;14.54156,-61.10311;14.58409,-61.04799</route>
     <runs>
-      <run id="145" length="560.0">
-        <start name="Le Havre" date="2025-10-26T13:50:00Z" lat="0.00000" lng="0.00000" />
-        <arrival name="Fort de France" date="" lat="14.58848" lng="-61.08270" />
+      <run id="35" length="3881.2">
+        <start name="La Trinité sur mer" date="2026-04-20T15:00:00Z" lat="47.54798" lng="-3.01746" />
+        <arrival name="Fort de France" date="" lat="14.58409" lng="-61.04799" />
       </run>
-      <run id="147" length="4285.0">
-        <start name="Le Havre" date="2025-10-26T13:30:00Z" lat="0.00000" lng="0.00000" />
-        <arrival name="Fort de France" date="" lat="14.58848" lng="-61.08270" />
-      </run>
-      <run id="146" length="4700.0">
-        <start name="Le Havre" date="2025-10-25T14:30:00Z" lat="0.00000" lng="0.00000" />
-        <arrival name="Fort de France" date="" lat="14.58848" lng="-61.08270" />
-      </run>
-      <run id="148" length="6670.0">
-        <start name="Le Havre" date="2025-10-26T13:10:00Z" lat="0.00000" lng="0.00000" />
-        <arrival name="Fort de France" date="" lat="14.58848" lng="-61.08270" />
+      <run id="36" length="3881.2">
+        <start name="La Trinité sur mer" date="2026-04-20T15:00:00Z" lat="47.54798" lng="-3.01746" />
+        <arrival name="Fort de France" date="" lat="14.58409" lng="-61.04799" />
       </run>
     </runs>
   </leg>
   <boats>
-    <boatclass id="4" name="Class40" record24h="0" runid="145">
-      <boat id="33" name="#empowher" sail="" nbhulls="5" hullcolors="202021|41C1BA|2F7A7A|202021|41C1BA" trackcolor="41C1BA" photo="" coef="1000" comment="">
+    <boatclass id="1" name="Duo" record24h="0" runid="35">
+      <boat id="1" name="Acromégales, Pas Seulement…" sail="" nbhulls="1" hullcolors="FF8F00|B9B9B9|FFFFFF|FF8F00|FF8F00" trackcolor="FF8F00" photo="" coef="1046" comment="Figaro 2">
         <crew>
-          <navigator id="1" fname="Pamela" lname="Lee" nat="" photo="lee_pamela.jpg" />
-          <navigator id="2" fname="Jay" lname="Thompson" nat="" photo="thompson_jay.jpg" />
+          <navigator id="1" fname="Perrin" lname="Laurent" nat="" photo="" />
+          <navigator id="2" fname="Frouin" lname="Jerome" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="37" name="Airvance Océlian Terélian" sail="" nbhulls="5" hullcolors="FFFFFF|F60112|275CA6|FFFFFF|FFFFFF" trackcolor="F60112" photo="" coef="1000" comment="">
+      <boat id="2" name="AD HOC Leucémie Espoir 56" sail="" nbhulls="1" hullcolors="FFD600|B9B9B9|FFFFFF|FFD600|FFD600" trackcolor="FFD600" photo="" coef="988" comment="JPK1010">
         <crew>
-          <navigator id="1" fname="Théa" lname="Khelif" nat="" photo="khelif_thea.jpg" />
-          <navigator id="2" fname="Marion" lname="Engelhard" nat="" photo="engelhard_marion.jpg" />
+          <navigator id="1" fname="Cheriaux" lname="Jean-françois" nat="" photo="" />
+          <navigator id="2" fname="Jacques" lname="Gwénaël" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="34" name="Alderan" sail="" nbhulls="5" hullcolors="192D46|FFFFFF|BCDD00|192D46|192D46" trackcolor="BCDD00" photo="" coef="1000" comment="">
+      <boat id="3" name="Afuté" sail="" nbhulls="1" hullcolors="DFFF00|B9B9B9|FFFFFF|DFFF00|DFFF00" trackcolor="DFFF00" photo="" coef="1000" comment="JPK 1030">
         <crew>
-          <navigator id="1" fname="Sasha" lname="Laniece" nat="" photo="laniece_sasha.jpg" />
-          <navigator id="2" fname="Sanni" lname="Beucke" nat="" photo="beucke_sanni.jpg" />
+          <navigator id="1" fname="Petit" lname="Jean-gabriel" nat="" photo="" />
+          <navigator id="2" fname="Petit" lname="Timothée" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="35" name="Alternative Sailing - Les Constructions du Belon" sail="" nbhulls="5" hullcolors="F2D53C|E8E7E9|2A2E2E|F2D53C|F2D53C" trackcolor="F2D53C" photo="" coef="1000" comment="">
+      <boat id="4" name="Agir Tôt" sail="" nbhulls="1" hullcolors="98FF00|B9B9B9|FFFFFF|98FF00|98FF00" trackcolor="98FF00" photo="" coef="1021" comment="BEPOX 990">
         <crew>
-          <navigator id="1" fname="Guillaume" lname="L'hostis" nat="" photo="lhostis_guillaume.jpg" />
-          <navigator id="2" fname="Antoine" lname="Le Manchec" nat="" photo="le_manchec_antoine.jpg" />
+          <navigator id="1" fname="Capon" lname="Charles" nat="" photo="" />
+          <navigator id="2" fname="Carpentier" lname="Patrice" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="36" name="Amarris" sail="" nbhulls="5" hullcolors="FFFFFF|5BB8DD|225886|FFFFFF|5BB8DD" trackcolor="5BB8DD" photo="" coef="1000" comment="">
+      <boat id="5" name="Association Saint-Louis" sail="" nbhulls="1" hullcolors="08FF00|B9B9B9|FFFFFF|08FF00|08FF00" trackcolor="08FF00" photo="" coef="1009" comment="J/99">
         <crew>
-          <navigator id="1" fname="Achille" lname="Nebout" nat="" photo="nebout_achille.jpg" />
-          <navigator id="2" fname="Gildas" lname="Mahé" nat="" photo="mahe_gildas.jpg" />
+          <navigator id="1" fname="Fournier" lname="Frédéric" nat="" photo="" />
+          <navigator id="2" fname="Fournier" lname="Adrien" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="40" name="Belco - CEC" sail="" nbhulls="1" hullcolors="FFFFFF|EF6B50|233B7D|FFFFFF|EF6B50" trackcolor="EF6B50" photo="" coef="1000" comment="">
+      <boat id="6" name="Atlantique Les Invincibles" sail="" nbhulls="1" hullcolors="00FF3E|B9B9B9|FFFFFF|00FF3E|00FF3E" trackcolor="00FF3E" photo="" coef="1034" comment="Figaro 2">
         <crew>
-          <navigator id="1" fname="Louis" lname="Mayaud" nat="" photo="mayaud_louis.jpg" />
-          <navigator id="2" fname="Alexandre" lname="Bellangé" nat="" photo="bellange_alexandre.jpg" />
+          <navigator id="1" fname="Banvillet" lname="Alexis" nat="" photo="" />
+          <navigator id="2" fname="Grimault" lname="Stephane" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="38" name="Bleu Blanc Planète Location" sail="" nbhulls="5" hullcolors="2E3A6C|85C340|FFFFFF|2E3A6C|FF4700" trackcolor="FEFFFF" photo="" coef="1000" comment="">
+      <boat id="7" name="Aurore pour Chemin d'écoles" sail="" nbhulls="1" hullcolors="00FF86|B9B9B9|FFFFFF|00FF86|00FF86" trackcolor="00FF86" photo="" coef="1040" comment="Figaro 2">
         <crew>
-          <navigator id="1" fname="Quentin" lname="Le Nabour" nat="" photo="le_nabour_quentin.jpg" />
-          <navigator id="2" fname="Thierry" lname="Chabagny" nat="" photo="chabagny_thierry.jpg" />
+          <navigator id="1" fname="Delemazure" lname="Alexandre" nat="" photo="" />
+          <navigator id="2" fname="Pruvost" lname="Laurent" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="41" name="Centrakor Hirsch" sail="" nbhulls="5" hullcolors="24C8D7|142F4A|FFC83B|24C8D7|24C8D7" trackcolor="24C8D7" photo="" coef="1000" comment="">
+      <boat id="8" name="Budmo" sail="" nbhulls="1" hullcolors="00E8FF|B9B9B9|FFFFFF|00E8FF|00E8FF" trackcolor="00E8FF" photo="" coef="1058" comment="Figaro 2">
         <crew>
-          <navigator id="1" fname="Mikael" lname="Mergui" nat="" photo="mergui_mikael.jpg" />
-          <navigator id="2" fname="Kéni" lname="Piperol" nat="" photo="piperol_keni.jpg" />
+          <navigator id="1" fname="Rein" lname="Emma" nat="" photo="" />
+          <navigator id="2" fname="Le" lname="Levier Axel" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="42" name="Crosscall" sail="" nbhulls="5" hullcolors="FFFFFF|DCE719|2E2E2E|FFFFFF|DCE719" trackcolor="DCE719" photo="" coef="1000" comment="">
+      <boat id="9" name="DELNIC - À Bras Ouverts" sail="" nbhulls="1" hullcolors="0011FF|B9B9B9|FFFFFF|0011FF|0011FF" trackcolor="0011FF" photo="" coef="986" comment="JPK 10.10">
         <crew>
-          <navigator id="1" fname="Aurélien" lname="Ducroz" nat="" photo="ducroz_aurelien.jpg" />
-          <navigator id="2" fname="Jonathan" lname="Chodkiewiez" nat="" photo="chodkiewiez_jonathan.jpg" />
+          <navigator id="1" fname="Rousselin" lname="Benoit" nat="" photo="" />
+          <navigator id="2" fname="Aulanier" lname="Tanguy" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="43" name="Défi Solidaire avec Ellye et l'Arche" sail="" nbhulls="5" hullcolors="1D467C|FCB027|6D6E72|1D467C|6D6E72" trackcolor="6D6E72" photo="" coef="1000" comment="">
+      <boat id="10" name="Espérance banlieues OXYGEN" sail="" nbhulls="1" hullcolors="3500FF|B9B9B9|FFFFFF|3500FF|3500FF" trackcolor="3500FF" photo="" coef="991" comment="JPK1010">
         <crew>
-          <navigator id="1" fname="Nicolas" lname="Jossier" nat="" photo="jossier_nicolas.jpg" />
-          <navigator id="2" fname="Sophie" lname="Faguet" nat="" photo="faguet_sophie.jpg" />
+          <navigator id="1" fname="Graffan" lname="Bernard" nat="" photo="" />
+          <navigator id="2" fname="Salle" lname="De Chou Bruno" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="44" name="Ekinox" sail="" nbhulls="5" hullcolors="000000|F3B82C|6C6C70|000000|F3B82C" trackcolor="F3B82C" photo="" coef="1000" comment="">
+      <boat id="11" name="Etoile de la Baie" sail="" nbhulls="1" hullcolors="7D00FF|B9B9B9|FFFFFF|7D00FF|7D00FF" trackcolor="7D00FF" photo="" coef="1013" comment="JPK 1030">
         <crew>
-          <navigator id="1" fname="Benoit" lname="Sineau" nat="" photo="sineau_benoit.jpg" />
-          <navigator id="2" fname="Alberto" lname="Riva" nat="" photo="riva_alberto.jpg" />
+          <navigator id="1" fname="Morand" lname="Alexandre" nat="" photo="" />
+          <navigator id="2" fname="Gegaden" lname="Tristan" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="39" name="ENGIE - Dessine-Moi la High-Tech" sail="" nbhulls="5" hullcolors="42A8DC|F7C700|FFFFFF|42A8DC|42A8DC" trackcolor="F3C51F" photo="" coef="1000" comment="">
+      <boat id="12" name="Excellence Ruralités PRUDENTIA" sail="" nbhulls="1" hullcolors="C400FF|B9B9B9|FFFFFF|C400FF|C400FF" trackcolor="C400FF" photo="" coef="999" comment="JEANNEAU SUN FAST 3200">
         <crew>
-          <navigator id="1" fname="Aina" lname="Bauza Roig" nat="" photo="bauza_roig_aina.jpg" />
-          <navigator id="2" fname="Axelle" lname="Pillain" nat="" photo="pillain_axelle.jpg" />
+          <navigator id="1" fname="Duhot" lname="Etienne" nat="" photo="" />
+          <navigator id="2" fname="Dupont" lname="Tanguy" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="45" name="ESATCO" sail="" nbhulls="1" hullcolors="E75909|140A18|FFFFFF|E75909|E75909" trackcolor="E75909" photo="" coef="1000" comment="">
+      <boat id="13" name="FASTLANE - INFI?ITE" sail="" nbhulls="1" hullcolors="FF00A9|B9B9B9|FFFFFF|FF00A9|FF00A9" trackcolor="FF00A9" photo="" coef="1015" comment="JPK 10:30">
         <crew>
-          <navigator id="1" fname="Nicolas" lname="Guibal" nat="" photo="guibal_nicolas.jpg" />
-          <navigator id="2" fname="Gauthier" lname="Bril" nat="" photo="bril_gauthier.jpg" />
+          <navigator id="1" fname="Apolda" lname="Jérôme" nat="" photo="" />
+          <navigator id="2" fname="Apolda" lname="Loic" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="47" name="Influence2" sail="" nbhulls="5" hullcolors="80919B|D6E100|D6E100|80919B|80919B" trackcolor="D6E100" photo="" coef="1000" comment="">
+      <boat id="14" name="Fondation Arthritis" sail="" nbhulls="1" hullcolors="CC3900|B9B9B9|FFFFFF|CC3900|CC3900" trackcolor="CC3900" photo="" coef="1013" comment="JPK 1030">
         <crew>
-          <navigator id="1" fname="Andrea" lname="Fornaro" nat="" photo="fornaro_andrea.jpg" />
-          <navigator id="2" fname="Alessandro" lname="Torresani" nat="" photo="torresani_alessandro.jpg" />
+          <navigator id="1" fname="Le" lname="Moign Damien" nat="" photo="" />
+          <navigator id="2" fname="Noël" lname="Alexandre" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="48" name="Inland Roots Ocean Soul" sail="" nbhulls="5" hullcolors="EEEEEE|9D9D9D|6C6C6C|EEEEEE|0000FF" trackcolor="FFFFFF" photo="" coef="1000" comment="">
+      <boat id="15" name="Green Sanctuaries" sail="" nbhulls="1" hullcolors="CC7200|B9B9B9|FFFFFF|CC7200|CC7200" trackcolor="CC7200" photo="" coef="1034" comment="POGO 30">
         <crew>
-          <navigator id="1" fname="Milan" lname="Kolacek" nat="" photo="kolacek_milan.jpg" />
-          <navigator id="2" fname="Pierre" lname="Brasseur" nat="" photo="brasseur_pierre.jpg" />
+          <navigator id="1" fname="Grippon" lname="Pierre" nat="" photo="" />
+          <navigator id="2" fname="Pinta" lname="Guillaume" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="49" name="Innovad.group - XLG" sail="" nbhulls="1" hullcolors="131B26|E15A26|FFFFFF|131B26|E15A26" trackcolor="E15A26" photo="" coef="1000" comment="">
+      <boat id="16" name="KAIZEN pour les Savateuses" sail="" nbhulls="1" hullcolors="B2CC00|B9B9B9|FFFFFF|B2CC00|B2CC00" trackcolor="B2CC00" photo="" coef="1025" comment="Sun Fast 3300">
         <crew>
-          <navigator id="1" fname="Jérôme" lname="Delire" nat="" photo="delire_jerome.jpg" />
-          <navigator id="2" fname="Caroline" lname="Dieu" nat="" photo="dieu_caroline.jpg" />
+          <navigator id="1" fname="Bulckaert" lname="Greg" nat="" photo="" />
+          <navigator id="2" fname="Philippe" lname="Mathieu" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="50" name="Interaction" sail="" nbhulls="5" hullcolors="ED3243|ED3243|FFFFFF|ED3243|ED3243" trackcolor="ED3243" photo="" coef="1000" comment="">
+      <boat id="17" name="LADYBUG EVL" sail="" nbhulls="1" hullcolors="79CC00|B9B9B9|FFFFFF|79CC00|79CC00" trackcolor="79CC00" photo="" coef="1036" comment="SUN FAST 3600">
         <crew>
-          <navigator id="1" fname="Yannig" lname="Livory" nat="" photo="livory_yannig.jpg" />
-          <navigator id="2" fname="Erwan" lname="Livory" nat="" photo="livory_erwan.jpg" />
+          <navigator id="1" fname="Marzin" lname="Cyril" nat="" photo="" />
+          <navigator id="2" fname="Talarbadon" lname="David" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="51" name="L'agence Telecom - Sotraplant" sail="" nbhulls="1" hullcolors="FFFFFF|000000|F30100|FFFFFF|F30100" trackcolor="F30100" photo="" coef="1000" comment="">
+      <boat id="18" name="Les Elles du Large - Parkinson" sail="" nbhulls="1" hullcolors="07CC00|B9B9B9|FFFFFF|07CC00|07CC00" trackcolor="07CC00" photo="" coef="980" comment="JPK 9.60">
         <crew>
-          <navigator id="1" fname="Matthieu" lname="Foulquier-gazagnes" nat="" photo="foulquier-gazagnes_matthieu.jpg" />
-          <navigator id="2" fname="Gildas" lname="Beauchamps" nat="" photo="beauchamps_gildas.jpg" />
+          <navigator id="1" fname="Robin" lname="Morgane" nat="" photo="" />
+          <navigator id="2" fname="Ansel" lname="Véronique" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="52" name="Legallais" sail="" nbhulls="5" hullcolors="4D95CC|D6262F|F5E305|4D95CC|F5E208" trackcolor="F5E208" photo="" coef="1000" comment="">
+      <boat id="19" name="Les Jardins Sous-Marins" sail="" nbhulls="1" hullcolors="00CC32|B9B9B9|FFFFFF|00CC32|00CC32" trackcolor="00CC32" photo="" coef="1058" comment="JPK 1050">
         <crew>
-          <navigator id="1" fname="Fabien" lname="Delahaye" nat="" photo="delahaye_fabien.jpg" />
-          <navigator id="2" fname="Pierre" lname="Leboucher" nat="" photo="leboucher_pierre.jpg" />
+          <navigator id="1" fname="Vian" lname="Régis" nat="" photo="" />
+          <navigator id="2" fname="Vian" lname="Clémence" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="72" name="Les Invincibles" sail="" nbhulls="5" hullcolors="44B6ED|FFFFFF|01446F|44B6ED|44B6ED" trackcolor="44B6ED" photo="" coef="1000" comment="">
+      <boat id="20" name="Les liens du coeur" sail="" nbhulls="1" hullcolors="00CC6B|B9B9B9|FFFFFF|00CC6B|00CC6B" trackcolor="00CC6B" photo="" coef="1024" comment="A35R">
         <crew>
-          <navigator id="1" fname="William" lname="Mathelin-Moreaux" nat="" photo="mathelin-moreaux_william.jpg" />
-          <navigator id="2" fname="Pietro" lname="Luciani" nat="" photo="luciani_pietro.jpg" />
+          <navigator id="1" fname="Germain" lname="Jean-philippe" nat="" photo="" />
+          <navigator id="2" fname="Viaud" lname="Jerome" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="53" name="Maccaferri Futura" sail="" nbhulls="5" hullcolors="E8E6E6|CFB700|ACACAC|E8E6E6|E8E6E6" trackcolor="CFB700" photo="" coef="1000" comment="">
+      <boat id="21" name="Loire Odyssée" sail="" nbhulls="1" hullcolors="00CCA4|B9B9B9|FFFFFF|00CCA4|00CCA4" trackcolor="00CCA4" photo="" coef="1027" comment="Figaro 2">
         <crew>
-          <navigator id="1" fname="Luca" lname="Rosetti" nat="" photo="rosetti_luca.jpg" />
-          <navigator id="2" fname="Matteo" lname="Sericano" nat="" photo="sericano_matteo.jpg" />
+          <navigator id="1" fname="Montecot" lname="Jacques" nat="" photo="" />
+          <navigator id="2" fname="Vignon" lname="Emmanuel" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="54" name="Martinique Horizon" sail="" nbhulls="1" hullcolors="FFFFFF|FF7D01|012772|FFFFFF|FFFFFF" trackcolor="FF7D01" photo="" coef="1000" comment="">
+      <boat id="22" name="LOIZA pour la Fabuleuse Armada" sail="" nbhulls="1" hullcolors="00BACC|B9B9B9|FFFFFF|00BACC|00BACC" trackcolor="00BACC" photo="" coef="990" comment="JPK 10.10">
         <crew>
-          <navigator id="1" fname="Jean-yves" lname="Aglae" nat="" photo="aglae_jean-yves.jpg" />
-          <navigator id="2" fname="Moane" lname="Mangattale" nat="" photo="mangattale_moane.jpg" />
+          <navigator id="1" fname="Zucconi" lname="Adrien" nat="" photo="" />
+          <navigator id="2" fname="Zucconi" lname="Damien" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="55" name="NST Racing &amp; Cabinet Z" sail="" nbhulls="5" hullcolors="02F5A3|3C3C3A|000C51|02F5A3|02F5A3" trackcolor="02F5A3" photo="" coef="1000" comment="">
+      <boat id="23" name="Mercy Ships - MAD ATAO" sail="" nbhulls="1" hullcolors="0080CC|B9B9B9|FFFFFF|0080CC|0080CC" trackcolor="0080CC" photo="" coef="1012" comment="JPK 10.30">
         <crew>
-          <navigator id="1" fname="Thomas" lname="Jourdren" nat="" photo="jourdren_thomas.jpg" />
-          <navigator id="2" fname="Joseph" lname="Cloarec" nat="" photo="cloarec_joseph.jpg" />
+          <navigator id="1" fname="Le" lname="Frapper Philippe" nat="" photo="" />
+          <navigator id="2" fname="Renault" lname="Thierry" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="73" name="Ocean Connect - The Sea Cleaners" sail="" nbhulls="5" hullcolors="F5F3F4|5D575B|006EC9|F5F3F4|F5F3F4" trackcolor="F5F3F4" photo="" coef="1000" comment="">
+      <boat id="24" name="MIDNIGHT BLUES - MS Society" sail="" nbhulls="1" hullcolors="0047CC|B9B9B9|FFFFFF|0047CC|0047CC" trackcolor="0047CC" photo="" coef="1056" comment="Pogo RC">
         <crew>
-          <navigator id="1" fname="Jean Baptiste" lname="Ternon" nat="" photo="ternon_jean_baptiste.jpg" />
-          <navigator id="2" fname="Gaëtan" lname="Thomas" nat="" photo="thomas_gaetan.jpg" />
+          <navigator id="1" fname="Renier" lname="Jean-eudes" nat="" photo="" />
+          <navigator id="2" fname="Lacey" lname="Joe" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="56" name="Ose ta Victoire" sail="" nbhulls="1" hullcolors="FFFFFF|FBA31D|F14B28|FFFFFF|FBA31D" trackcolor="FBA31D" photo="" coef="1000" comment="">
+      <boat id="25" name="OMG - Mes TALents" sail="" nbhulls="1" hullcolors="000ECC|B9B9B9|FFFFFF|000ECC|000ECC" trackcolor="000ECC" photo="" coef="1036" comment="Figaro Bénéteau 2">
         <crew>
-          <navigator id="1" fname="Thomas" lname="Lurton" nat="" photo="lurton_thomas.jpg" />
-          <navigator id="2" fname="Sacha" lname="Vandenbrouck" nat="" photo="vandenbrouck_sacha.jpg" />
+          <navigator id="1" fname="Tailliandier" lname="Brice" nat="" photo="" />
+          <navigator id="2" fname="Sordet" lname="Charles-henri" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="57" name="Phare 40 - HA Plus PME" sail="" nbhulls="1" hullcolors="FAC524|C52D82|FFFFFF|FAC524|FAC524" trackcolor="FAC524" photo="" coef="1000" comment="">
+      <boat id="26" name="OSE" sail="" nbhulls="1" hullcolors="2A00CC|B9B9B9|FFFFFF|2A00CC|2A00CC" trackcolor="2A00CC" photo="" coef="1055" comment="JPK 10.50">
         <crew>
-          <navigator id="1" fname="Edgard" lname="Vincens" nat="" photo="vincens_edgard.jpg" />
-          <navigator id="2" fname="Louis" lname="Torreilles" nat="" photo="torreilles_louis.jpg" />
+          <navigator id="1" fname="Guigne" lname="Eric" nat="" photo="" />
+          <navigator id="2" fname="Paul" lname="Maxime" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="58" name="Pierreval - Fondation Good Planet" sail="" nbhulls="5" hullcolors="AABF16|1D324D|FFFFFF|AABF16|AABF16" trackcolor="AABF16" photo="" coef="1000" comment="">
+      <boat id="27" name="Pierre Claver" sail="" nbhulls="1" hullcolors="CC00C1|B9B9B9|FFFFFF|CC00C1|CC00C1" trackcolor="CC00C1" photo="" coef="984" comment="Sun Fast 3200">
         <crew>
-          <navigator id="1" fname="Vincent" lname="Riou" nat="" photo="riou_vincent.jpg" />
-          <navigator id="2" fname="Yann" lname="Doffin" nat="" photo="doffin_yann.jpg" />
+          <navigator id="1" fname="Ajacques" lname="Louis" nat="" photo="" />
+          <navigator id="2" fname="Gourvil" lname="Eliott" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="59" name="RDT Logistic - Forvis Mazars" sail="" nbhulls="5" hullcolors="FF6600|FFFFFF|161614|FF6600|FF6600" trackcolor="FF6600" photo="" coef="1000" comment="">
+      <boat id="28" name="POGO pour Guérir en mer" sail="" nbhulls="1" hullcolors="CC004E|B9B9B9|FFFFFF|CC004E|CC004E" trackcolor="CC004E" photo="" coef="1078" comment="POGO RC">
         <crew>
-          <navigator id="1" fname="Renaud" lname="Courbon" nat="" photo="courbon_renaud.jpg" />
-          <navigator id="2" fname="Gilles" lname="Courbon" nat="" photo="courbon_gilles.jpg" />
+          <navigator id="1" fname="Manuard" lname="Sam" nat="" photo="" />
+          <navigator id="2" fname="Le" lname="Mene Erwann" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="60" name="Réauté Chocolat" sail="" nbhulls="5" hullcolors="E2F217|45464C|FFFFFF|E2F217|E2F217" trackcolor="E2F217" photo="" coef="1000" comment="">
+      <boat id="29" name="SLENERGIES V1D2 F Renouvelable" sail="" nbhulls="1" hullcolors="995500|B9B9B9|FFFFFF|995500|995500" trackcolor="995500" photo="" coef="1030" comment="JPK 10,80">
         <crew>
-          <navigator id="1" fname="Lomano" lname="Takasi" nat="" photo="takasi_lomano.jpg" />
-          <navigator id="2" fname="Jean" lname="Marre" nat="" photo="marre_jean.jpg" />
+          <navigator id="1" fname="Charmy" lname="Laurent" nat="" photo="" />
+          <navigator id="2" fname="Renet" lname="Grégoire" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="61" name="Renovatec - Voiles et Performances" sail="" nbhulls="1" hullcolors="FFFFFF|89C437|89C437|FFFFFF|89C437" trackcolor="89C437" photo="" coef="1000" comment="">
+      <boat id="30" name="TUF TUF TUF Coeur en liberté" sail="" nbhulls="1" hullcolors="869900|B9B9B9|FFFFFF|869900|869900" trackcolor="869900" photo="" coef="1061" comment="FIGARO2">
         <crew>
-          <navigator id="1" fname="Ulysse" lname="Pozzoli" nat="" photo="pozzoli_ulysse.jpg" />
-          <navigator id="2" fname="Steven" lname="Griener" nat="" photo="griener_steven.jpg" />
+          <navigator id="1" fname="Tuffier" lname="Pascal" nat="" photo="" />
+          <navigator id="2" fname="Boinet" lname="Mary" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="62" name="Rêve à Perte de Vue - Qwanza" sail="" nbhulls="1" hullcolors="80B7E0|235D9D|FFFFFF|80B7E0|80B7E0" trackcolor="80B7E0" photo="" coef="1000" comment="">
+      <boat id="31" name="VAELMORA - UDSM" sail="" nbhulls="1" hullcolors="5B9900|B9B9B9|FFFFFF|5B9900|5B9900" trackcolor="5B9900" photo="" coef="1009" comment="J 99">
         <crew>
-          <navigator id="1" fname="Joël" lname="Paris" nat="" photo="paris_joel.jpg" />
-          <navigator id="2" fname="Goulven" lname="Marie" nat="" photo="marie_goulven.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="63" name="Rêve de Large 5" sail="" nbhulls="1" hullcolors="F8B100|F55C20|00B6B9|F8B100|F8B100" trackcolor="F8B100" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Rodolphe" lname="Sepho" nat="" photo="sepho_rodolphe.jpg" />
-          <navigator id="2" fname="Jean-pierre" lname="Coutayar" nat="" photo="coutayar_jean-pierre.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="64" name="Seafrigo - Sogestran" sail="" nbhulls="5" hullcolors="FFFFFF|25A4C6|154490|FFFFFF|25A4C6" trackcolor="25A4C6" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Guillaume" lname="Pirouelle" nat="" photo="pirouelle_guillaume.jpg" />
-          <navigator id="2" fname="Cédric" lname="Chateau" nat="" photo="chateau_cedric.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="46" name="SNSM Faites un don !" sail="" nbhulls="5" hullcolors="CCCCCC|666666|333333|CCCCCC|CCCCCC" trackcolor="CCCCCC" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Corentin" lname="Douguet" nat="" photo="douguet_corentin.jpg" />
-          <navigator id="2" fname="Axel" lname="Tréhin" nat="" photo="trehin_axel.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="65" name="Solano" sail="" nbhulls="5" hullcolors="FFFFFF|1D487E|1D487E|FFFFFF|FFFFFF" trackcolor="FFFFFF" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Robin" lname="Follin" nat="" photo="follin_robin.jpg" />
-          <navigator id="2" fname="Jules" lname="Bonnier" nat="" photo="bonnier_jules.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="66" name="Trimcontrol" sail="" nbhulls="5" hullcolors="FFFFFF|999999|333333|FFFFFF|FFAA00" trackcolor="FFFFFF" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Alexandre" lname="Le Gallais" nat="" photo="le_gallais_alexandre.jpg" />
-          <navigator id="2" fname="Michel" lname="Desjoyeaux" nat="" photo="desjoyeaux_michel.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="67" name="Viranga" sail="" nbhulls="5" hullcolors="FFFFFF|E84487|383838|FFFFFF|E84487" trackcolor="E84487" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Emmanuel" lname="Hamez" nat="" photo="hamez_emmanuel.jpg" />
-          <navigator id="2" fname="Gérald" lname="Véniard" nat="" photo="veniard_gerald.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="68" name="Vogue Avec Un Crohn" sail="" nbhulls="5" hullcolors="1891CD|244671|FFFFFF|1891CD|1891CD" trackcolor="1891CD" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Pierre-louis" lname="Attwell" nat="" photo="attwell_pierre-louis.jpg" />
-          <navigator id="2" fname="Maxime" lname="Bensa" nat="" photo="bensa_maxime.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="69" name="VSF Sports" sail="" nbhulls="5" hullcolors="FFFFFF|65D037|000000|FFFFFF|65D037" trackcolor="65D037" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Pep" lname="Costa" nat="" photo="costa_pep.jpg" />
-          <navigator id="2" fname="Pablo" lname="Santurde Del Arco" nat="" photo="santurde_del_arco_pablo.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="70" name="Wasabiii" sail="" nbhulls="5" hullcolors="FFFFFF|666666|000000|FFFFFF|FF00AA" trackcolor="FFFFFF" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Stéphane" lname="Bodin" nat="" photo="bodin_stephane.jpg" />
-          <navigator id="2" fname="Loeiz" lname="Cadiou" nat="" photo="cadiou_loeiz.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="71" name="Weeecycling" sail="" nbhulls="5" hullcolors="EEEEEE|9D9D9D|6C6C6C|EEEEEE|FFAA00" trackcolor="FFFFFF" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Nicolas" lname="Lemarchand" nat="" photo="lemarchand_nicolas.jpg" />
-          <navigator id="2" fname="Matthieu" lname="Derenne" nat="" photo="derenne_matthieu.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="74" name="Zeiss" sail="" nbhulls="5" hullcolors="1B489D|FEFEFE|DDDB01|1B489D|DDDB01" trackcolor="DDDB01" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Thimoté" lname="Polet" nat="" photo="polet_thimote.jpg" />
-          <navigator id="2" fname="Pierrick" lname="Letouze" nat="" photo="letouze_pierrick.jpg" />
+          <navigator id="1" fname="Bore" lname="Bertrand" nat="" photo="" />
+          <navigator id="2" fname="Chalaux" lname="Eric" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
     </boatclass>
-    <boatclass id="2" name="Ocean Fifty" record24h="0" runid="146">
-      <boat id="5" name="Edenred 5" sail="" nbhulls="3" hullcolors="FF0000|EFEFEF|FFFFFF|FF0000|FF0000" trackcolor="FF0000" photo="" coef="1000" comment="">
+    <boatclass id="2" name="Solo" record24h="0" runid="36">
+      <boat id="32" name="20 ans 1 projet - OB'AJA" sail="" nbhulls="1" hullcolors="FF4700|B9B9B9|FFFFFF|FF4700|FF4700" trackcolor="FF4700" photo="" coef="1034" comment="Figaro 2">
         <crew>
-          <navigator id="1" fname="Emmanuel" lname="Le Roch" nat="" photo="le_roch_emmanuel.jpg" />
-          <navigator id="2" fname="Basile" lname="Bourgnon" nat="" photo="bourgnon_basile.jpg" />
+          <navigator id="1" fname="Despretz" lname="Grégoire" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="6" name="Inter Invest" sail="" nbhulls="3" hullcolors="0573B0|FFFFFF|057004|0573B0|0573B0" trackcolor="0573B0" photo="" coef="1000" comment="">
+      <boat id="33" name="AQUASONIC les Dotis" sail="" nbhulls="1" hullcolors="50FF00|B9B9B9|FFFFFF|50FF00|50FF00" trackcolor="50FF00" photo="" coef="1011" comment="A35">
         <crew>
-          <navigator id="1" fname="Matthieu" lname="Perraut" nat="" photo="perraut_matthieu.jpg" />
-          <navigator id="2" fname="Jean-baptiste" lname="Gellée" nat="" photo="gellee_jean-baptiste.jpg" />
+          <navigator id="1" fname="Houchard" lname="Pierre-marie" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="7" name="Koesio" sail="" nbhulls="3" hullcolors="6D3EA4|FC3851|402886|6D3EA4|6D3EA4" trackcolor="FC3851" photo="" coef="1000" comment="">
+      <boat id="34" name="BE HAPPY - TOUS avec Lulu" sail="" nbhulls="1" hullcolors="00FFCD|B9B9B9|FFFFFF|00FFCD|00FFCD" trackcolor="00FFCD" photo="" coef="1032" comment="SUN FAST 3600">
         <crew>
-          <navigator id="1" fname="Erwan" lname="Le Roux" nat="" photo="le_roux_erwan.jpg" />
-          <navigator id="2" fname="Audrey" lname="Ogereau" nat="" photo="ogereau_audrey.jpg" />
+          <navigator id="1" fname="Couture" lname="Frederic" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="8" name="Lazare x Hellio" sail="" nbhulls="3" hullcolors="000010|F15C94|ACB1B4|000010|000010" trackcolor="F15C94" photo="" coef="1000" comment="">
+      <boat id="45" name="Bowloom SOS Préma" sail="" nbhulls="1" hullcolors="998000|B9B9B9|FFFFFF|998000|998000" trackcolor="998000" photo="" coef="995" comment="Sun Fast 3200 R2">
         <crew>
-          <navigator id="1" fname="Erwan" lname="Le Draoulec" nat="" photo="le_draoulec_erwan.jpg" />
-          <navigator id="2" fname="Tanguy" lname="Le Turquais" nat="" photo="le_turquais_tanguy.jpg" />
+          <navigator id="1" fname="Breuvart" lname="Maxime" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="9" name="Le Rire Medecin Lamotte" sail="" nbhulls="3" hullcolors="E30038|AEAEB0|53575A|E30038|E30038" trackcolor="E30038" photo="" coef="1000" comment="">
+      <boat id="35" name="CAVOK II pour Optimist 29" sail="" nbhulls="1" hullcolors="00A1FF|B9B9B9|FFFFFF|00A1FF|00A1FF" trackcolor="00A1FF" photo="" coef="1023" comment="POGO 30">
         <crew>
-          <navigator id="1" fname="Luke" lname="Berry" nat="" photo="berry_luke.jpg" />
-          <navigator id="2" fname="Antoine" lname="Joubert" nat="" photo="joubert_antoine.jpg" />
+          <navigator id="1" fname="Gach" lname="Philippe" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="10" name="Mon Bonnet Rose" sail="" nbhulls="3" hullcolors="D45A93|FFFFFF|363638|D45A93|D45A93" trackcolor="D45A93" photo="" coef="1000" comment="">
+      <boat id="36" name="CDC développpement solidaire" sail="" nbhulls="1" hullcolors="0059FF|B9B9B9|FFFFFF|0059FF|0059FF" trackcolor="0059FF" photo="" coef="1080" comment="Pogo RC">
         <crew>
-          <navigator id="1" fname="Laurent" lname="Bourguès" nat="" photo="bourgues_laurent.jpg" />
-          <navigator id="2" fname="Arnaud" lname="Vasseur" nat="" photo="vasseur_arnaud.jpg" />
+          <navigator id="1" fname="Coret" lname="Pascal" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="11" name="Solidaires En Peloton" sail="" nbhulls="3" hullcolors="E74D14|172937|0489B6|E74D14|E74D14" trackcolor="E74D14" photo="" coef="1000" comment="">
+      <boat id="37" name="EXODUS - Chirurgie Solidaire" sail="" nbhulls="1" hullcolors="FF00F1|B9B9B9|FFFFFF|FF00F1|FF00F1" trackcolor="FF00F1" photo="" coef="997" comment="Bongo 9.60">
         <crew>
-          <navigator id="1" fname="Thibaut" lname="Vauchel-camus" nat="" photo="vauchel-camus_thibaut.jpg" />
-          <navigator id="2" fname="Damien" lname="Seguin" nat="" photo="seguin_damien.jpg" />
+          <navigator id="1" fname="Siriser" lname="Frank" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="12" name="Upwind By Merconcept" sail="" nbhulls="3" hullcolors="F3694E|FFFFFF|183150|F3694E|F3694E" trackcolor="F3694E" photo="" coef="1000" comment="">
+      <boat id="38" name="FESTA pour Aster" sail="" nbhulls="1" hullcolors="FF0062|B9B9B9|FFFFFF|FF0062|FF0062" trackcolor="FF0062" photo="" coef="1057" comment="JPK 1050">
         <crew>
-          <navigator id="1" fname="Anne-claire" lname="Le Berre" nat="" photo="le_berre_anne-claire.jpg" />
-          <navigator id="2" fname="Elodie-jane" lname="Mettraux" nat="" photo="mettraux_elodie-jane.jpg" />
+          <navigator id="1" fname="Hamon" lname="Jean Francois" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="13" name="Viabilis Océans" sail="" nbhulls="3" hullcolors="A8D698|2B255E|FFE85F|A8D698|A8D698" trackcolor="A8D698" photo="" coef="1000" comment="">
+      <boat id="39" name="JOKARI Camino de l’espoir" sail="" nbhulls="1" hullcolors="CCAB00|B9B9B9|FFFFFF|CCAB00|CCAB00" trackcolor="CCAB00" photo="" coef="1031" comment="Sun fast 3600">
         <crew>
-          <navigator id="1" fname="Baptiste" lname="Hulin" nat="" photo="hulin_baptiste.jpg" />
-          <navigator id="2" fname="Thomas" lname="Rouxel" nat="" photo="rouxel_thomas.jpg" />
+          <navigator id="1" fname="Gaudru" lname="Philippe" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="14" name="Wewise" sail="" nbhulls="3" hullcolors="0175EA|001C80|F7ED37|0175EA|0175EA" trackcolor="F7ED37" photo="" coef="1000" comment="">
+      <boat id="40" name="LEON Trophée Estuaire Rose" sail="" nbhulls="1" hullcolors="40CC00|B9B9B9|FFFFFF|40CC00|40CC00" trackcolor="40CC00" photo="" coef="1055" comment="JPK 1050">
         <crew>
-          <navigator id="1" fname="Pierre" lname="Quiroga" nat="" photo="quiroga_pierre.jpg" />
-          <navigator id="2" fname="Gaston" lname="Morvan" nat="" photo="morvan_gaston.jpg" />
+          <navigator id="1" fname="Ozon" lname="Alexandre" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-    </boatclass>
-    <boatclass id="3" name="IMOCA" record24h="0" runid="147">
-      <boat id="15" name="11th Hour Racing" sail="" nbhulls="4" hullcolors="0078BA|F68A33|E62E2E|F47600|0078BA" trackcolor="F68A33" photo="" coef="1000" comment="">
+      <boat id="41" name="Persaivert" sail="" nbhulls="1" hullcolors="6400CC|B9B9B9|FFFFFF|6400CC|6400CC" trackcolor="6400CC" photo="" coef="0" comment="jpk1050">
         <crew>
-          <navigator id="1" fname="Francesca" lname="Clapcich" nat="" photo="clapcich_francesca.jpg" />
-          <navigator id="2" fname="Will" lname="Harris" nat="" photo="harris_will.jpg" />
+          <navigator id="1" fname="Kelbert" lname="Jean-pierre" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="16" name="4 CAD - La Mie Câline" sail="" nbhulls="4" hullcolors="FED13F|FFFFFF|0264B5|FFFFFF|FED13F" trackcolor="FED13F" photo="" coef="1000" comment="">
+      <boat id="42" name="PHI - DIABLO" sail="" nbhulls="1" hullcolors="9D00CC|B9B9B9|FFFFFF|9D00CC|9D00CC" trackcolor="9D00CC" photo="" coef="1036" comment="SUNFAST 3600">
         <crew>
-          <navigator id="1" fname="Arnaud" lname="Boissières" nat="" photo="boissieres_arnaud.jpg" />
-          <navigator id="2" fname="Benjamin" lname="Dutreux" nat="" photo="dutreux_benjamin.jpg" />
+          <navigator id="1" fname="Bracq" lname="Arnaud" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="17" name="Allagrande Mapei" sail="" nbhulls="4" hullcolors="00B3E3|FFFFFF|3C3C3B|C7C302|00B3E3" trackcolor="00B3E3" photo="" coef="1000" comment="">
+      <boat id="43" name="PLATYPUS - www.dmlht.org" sail="" nbhulls="1" hullcolors="CC0087|B9B9B9|FFFFFF|CC0087|CC0087" trackcolor="CC0087" photo="" coef="988" comment="Sun Fast 3200 R2">
         <crew>
-          <navigator id="1" fname="Ambrogio" lname="Beccaria" nat="" photo="beccaria_ambrogio.jpg" />
-          <navigator id="2" fname="Thomas" lname="Ruyant" nat="" photo="ruyant_thomas.jpg" />
+          <navigator id="1" fname="Benaben" lname="Philippe" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
-      <boat id="18" name="Association Petits Princes - Queguiner" sail="" nbhulls="4" hullcolors="333940|D03826|FFFFFF|D03826|D33826" trackcolor="D33826" photo="" coef="1000" comment="">
+      <boat id="44" name="RAPHAEL pour Alzheimer 56" sail="" nbhulls="1" hullcolors="992A00|B9B9B9|FFFFFF|992A00|992A00" trackcolor="992A00" photo="" coef="988" comment="JPK 1010">
         <crew>
-          <navigator id="1" fname="Elodie" lname="Bonafous" nat="" photo="bonafous_elodie.jpg" />
-          <navigator id="2" fname="Yann" lname="Elies" nat="" photo="elies_yann.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="19" name="Bureau Vallée" sail="" nbhulls="4" hullcolors="000000|FED13F|028C3B|FEC704|FEC704" trackcolor="000000" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Louis" lname="Burton" nat="" photo="burton_louis.jpg" />
-          <navigator id="2" fname="Clément" lname="Commagnac" nat="" photo="commagnac_clement.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="20" name="Café Joyeux" sail="" nbhulls="1" hullcolors="F7BF02|FFFFFF|070708|F7BF02|F7BF02" trackcolor="F7BF02" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Nico" lname="d'Estais" nat="" photo="destais_nico.jpg" />
-          <navigator id="2" fname="Simon" lname="Koster" nat="" photo="koster_simon.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="21" name="Charal" sail="" nbhulls="4" hullcolors="181A27|A8A8A8|CE3232|FFFFFF|181A27" trackcolor="181A27" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Jérémie" lname="Beyou" nat="" photo="beyou_jeremie.jpg" />
-          <navigator id="2" fname="Morgan" lname="Lagravière" nat="" photo="lagraviere_morgan.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="22" name="Coup De Pouce" sail="" nbhulls="4" hullcolors="131313|4AEDEF|F1E145|EA9440|FF8403" trackcolor="EA9440" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Manuel" lname="Cousin" nat="" photo="cousin_manuel.jpg" />
-          <navigator id="2" fname="Jean-baptiste" lname="Daramy" nat="" photo="daramy_jean-baptiste.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="23" name="FDJ United - Wewise" sail="" nbhulls="1" hullcolors="363636|3BA3E7|F5E945|363636|363636" trackcolor="3BA3E7" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Fabrice" lname="Amedeo" nat="" photo="amedeo_fabrice.jpg" />
-          <navigator id="2" fname="Andreas" lname="Baden" nat="" photo="baden_andreas.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="24" name="Fives Group - Lantana Environnement" sail="" nbhulls="1" hullcolors="980D65|080B10|FFFFFF|980D65|980D65" trackcolor="980D65" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Louis" lname="Duc" nat="" photo="duc_louis.jpg" />
-          <navigator id="2" fname="Masa" lname="Suzuki" nat="" photo="suzuki_masa.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="25" name="Fortinet - Best Western" sail="" nbhulls="4" hullcolors="2A528C|449BD4|DA291C|FFFFFF|2A528C" trackcolor="2A528C" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Romain" lname="Attanasio" nat="" photo="attanasio_romain.jpg" />
-          <navigator id="2" fname="Maxime" lname="Sorel" nat="" photo="sorel_maxime.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="26" name="Initiatives Coeur" sail="" nbhulls="4" hullcolors="8C1515|CE3232|FFFFFF|FFFFFF|8C1515" trackcolor="8C1515" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Samantha" lname="Davies" nat="" photo="davies_samantha.jpg" />
-          <navigator id="2" fname="Violette" lname="Dorange" nat="" photo="dorange_violette.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="27" name="Les P'tits Doudous" sail="" nbhulls="4" hullcolors="3F4564|C76A96|F1DE75|FFFFFF|C76A96" trackcolor="F1DE75" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Armel" lname="Tripon" nat="" photo="tripon_armel.jpg" />
-          <navigator id="2" fname="Tanguy" lname="Leglatin" nat="" photo="leglatin_tanguy.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="28" name="Macif Santé Prévoyance" sail="" nbhulls="4" hullcolors="265BB2|D7D632|FFFFFF|D4D62F|265BB2" trackcolor="265BB2" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Sam" lname="Goodchild" nat="" photo="goodchild_sam.jpg" />
-          <navigator id="2" fname="Loïs" lname="Berrehar" nat="" photo="berrehar_lois.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="29" name="MSIG Europe" sail="" nbhulls="1" hullcolors="D30D14|231859|FFFFFF|D30D14|D30D14" trackcolor="D30D14" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Conrad" lname="Colman" nat="" photo="colman_conrad.jpg" />
-          <navigator id="2" fname="Mathieu" lname="Blanchard" nat="" photo="blanchard_mathieu.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="30" name="New Europe" sail="" nbhulls="1" hullcolors="64BF71|FF2F2B|FCFCFC|64BF71|64BF71" trackcolor="64BF71" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Szabolcs" lname="Weöres" nat="" photo="weores_szabolcs.jpg" />
-          <navigator id="2" fname="Bérénice" lname="Charrez" nat="" photo="charrez_berenice.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="31" name="Paprec Arkéa" sail="" nbhulls="4" hullcolors="2535E0|D3262A|FFFFFF|000000|2535E0" trackcolor="8D95EF" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Yoann" lname="Richomme" nat="" photo="richomme_yoann.jpg" />
-          <navigator id="2" fname="Corentin" lname="Horeau" nat="" photo="horeau_corentin.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="32" name="Team Snef - TeamWork" sail="" nbhulls="4" hullcolors="0462A3|39444F|F1F9FB|EED613|0462A3" trackcolor="0462A3" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Justine" lname="Mettraux" nat="" photo="mettraux_justine.jpg" />
-          <navigator id="2" fname="Xavier" lname="Macaire" nat="" photo="macaire_xavier.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-    </boatclass>
-    <boatclass id="1" name="ULTIM" record24h="0" runid="148">
-      <boat id="1" name="Actual Ultim 4" sail="" nbhulls="3" hullcolors="8F96A0|FFFFFF|DD272F|8F96A0|DD272F" trackcolor="DD272F" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Anthony" lname="Marchand" nat="" photo="marchand_anthony.jpg" />
-          <navigator id="2" fname="Julien" lname="Villion" nat="" photo="villion_julien.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="2" name="Maxi Banque Populaire XI" sail="" nbhulls="3" hullcolors="1B2D76|4ACFFA|FFFFFF|1B2D76|4ACFFA" trackcolor="4ACFFA" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Armel" lname="Le Cléac'h" nat="" photo="le_cleach_armel.jpg" />
-          <navigator id="2" fname="Sébastien" lname="Josse" nat="" photo="josse_sebastien.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="3" name="Sodebo Ultim 3" sail="" nbhulls="3" hullcolors="78C648|FFFFFF|F49813|78C648|78C648" trackcolor="78C648" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Thomas" lname="Coville" nat="" photo="coville_thomas.jpg" />
-          <navigator id="2" fname="Benjamin" lname="Schwartz" nat="" photo="schwartz_benjamin.jpg" />
-        </crew>
-        <url></url>
-      </boat>
-      <boat id="4" name="SVR - Lazartigue" sail="" nbhulls="3" hullcolors="31AFE9|015883|FFFFFF|31AFE9|31AFE9" trackcolor="31AFE9" photo="" coef="1000" comment="">
-        <crew>
-          <navigator id="1" fname="Tom" lname="Laperche" nat="" photo="laperche_tom.jpg" />
-          <navigator id="2" fname="Franck" lname="Cammas" nat="" photo="cammas_franck.jpg" />
+          <navigator id="1" fname="Menahes" lname="Ludovic" nat="" photo="" />
         </crew>
         <url></url>
       </boat>
@@ -551,98 +322,115 @@
   </boats>
   <references />
   <raceareas>
-    <racearea sid="Parc_Eolien_du_Calvados" loxo="1" restricted="1" live="0" frequency="0" refresh="0">49.50438,-0.60002;49.49512,-0.51835;49.48467,-0.49893;49.48015,-0.45947;49.45352,-0.4252;49.4485,-0.42018;49.42383,-0.40657;49.4159,-0.41678;49.43078,-0.54725;49.45738,-0.58157;49.46157,-0.58202;49.48593,-0.59845;49.48667,-0.60475</racearea>
-    <racearea sid="Parc_Eolien_de_Saint-Brieuc" loxo="1" restricted="1" live="0" frequency="0" refresh="0">48.93,-2.56917;48.885,-2.5;48.8175,-2.45417;48.79667,-2.44833;48.79167,-2.50917;48.80583,-2.555;48.82,-2.57583;48.89667,-2.61833;48.90917,-2.61667</racearea>
-    <racearea sid="DSTCasquets" loxo="1" restricted="1" live="0" frequency="0" refresh="0">50.14417,-2.47;49.85333,-2.34917;49.77,-2.83917;50.05833,-2.95833</racearea>
-    <racearea sid="DSTOuessant" loxo="1" restricted="1" live="0" frequency="0" refresh="0">49.03417,-5.61167;48.81,-5.41667;48.62,-5.1975;48.48917,-5.3675;48.58333,-5.70833;48.70833,-6.05167;48.94,-5.86</racearea>
-    <racearea sid="Tri_Artillerie~route imoca" loxo="1" restricted="1" live="0" frequency="0" refresh="0">48.34,-4.61667;48.16667,-4.61667;48.16667,-4.88333;48.08333,-4.88333;48.08333,-5.33333;48.35,-5.33333;48.35,-4.88333;48.324,-4.88333;48.324,-4.80567;48.324,-4.7095;48.3335,-4.65867;48.34,-4.61667</racearea>
-    <racearea sid="DSTScillySouth" loxo="1" restricted="1" live="0" frequency="0" refresh="0">49.7675,-6.27417;49.59167,-6.27417;49.59167,-6.57;49.7675,-6.4925</racearea>
-    <racearea sid="DSTFinisterre" loxo="1" restricted="1" live="0" frequency="0" refresh="0">43.35,-9.60667;43.175,-9.73333;42.88,-9.73333;42.88,-10.23083;43.31583,-10.23083;43.52333,-10.08667</racearea>
-    <racearea sid="TSS_CaboDeRoca" loxo="1" restricted="1" live="0" frequency="0" refresh="0">38.86667,-9.685;38.66167,-9.66667;38.565,-10.195;38.68167,-10.23;38.86667,-10.23</racearea>
-    <racearea sid="TSS_CaboSaoVincente" loxo="1" restricted="1" live="0" frequency="0" refresh="0">37.04167,-9.195;36.945,-9.17167;36.85833,-9.07167;36.835,-8.95333;36.42,-9.1;36.47433,-9.36;36.73667,-9.66417;36.94333,-9.72167</racearea>
-    <racearea sid="DSTCanariaEast" loxo="1" restricted="1" live="0" frequency="0" refresh="0">28.33083,-14.795;27.81333,-15.00583;27.85833,-15.1475;28.34167,-14.94833</racearea>
-    <racearea sid="DSTCanariaWest" loxo="1" restricted="1" live="0" frequency="0" refresh="0">28.56333,-15.65667;27.97417,-16.21667;28.0575,-16.32833;28.63333,-15.77667</racearea>
-    <racearea sid="ZIMauritanie" loxo="1" restricted="1" live="0" frequency="0" refresh="0">21.51667,-16.41667;16,-16.41667;16,-17.58333;21.51667,-17.58333</racearea>
-    <racearea sid="ZISouthAmerica" loxo="1" restricted="1" live="0" frequency="0" refresh="0">-3.856,-33.8175;-5.16167,-35.48333;9.51917,-60.96333;11.35833,-60.51667</racearea>
-    <racearea sid="LiveArea_arrival" loxo="0" restricted="0" live="1" frequency="5" refresh="0">14.58783,-60.219406;14.662824,-60.222812;14.737156,-60.233128;14.81016,-60.250254;14.881181,-60.274024;14.949589,-60.304205;15.014844,-60.34039;15.076403,-60.382246;15.133844,-60.429286;15.186724,-60.481106;15.234744,-60.537175;15.277672,-60.596968;15.315118,-60.6601;15.347181,-60.725909;15.373567,-60.794015;15.394125,-60.863954;15.408866,-60.935229;15.417714,-61.007395;15.420625,-61.08;15.417714,-61.152605;15.408866,-61.224771;15.394125,-61.296046;15.373567,-61.365985;15.347181,-61.434091;15.315118,-61.4999;15.277672,-61.563032;15.234744,-61.622825;15.186724,-61.678894;15.133844,-61.730714;15.076403,-61.777754;15.014844,-61.81961;14.949589,-61.855795;14.881181,-61.885976;14.81016,-61.909746;14.737156,-61.926872;14.662824,-61.937188;14.58783,-61.940594;14.512859,-61.936926;14.438595,-61.926354;14.365704,-61.908984;14.294838,-61.884989;14.22657,-61.854725;14.161471,-61.818475;14.100008,-61.776683;14.042656,-61.729713;13.989766,-61.678064;13.941715,-61.622155;13.898734,-61.56251;13.861105,-61.499575;13.828949,-61.433872;13.802458,-61.365852;13.781785,-61.295979;13.766922,-61.224748;13.757946,-61.152605;13.755035,-61.08;13.757946,-61.007395;13.766922,-60.935252;13.781785,-60.864021;13.802458,-60.794148;13.828949,-60.726128;13.861105,-60.660425;13.898734,-60.59749;13.941715,-60.537845;13.989766,-60.481936;14.042656,-60.430287;14.100008,-60.383317;14.161471,-60.341525;14.22657,-60.305275;14.294838,-60.275011;14.365704,-60.251016;14.438595,-60.233646;14.512859,-60.223074;14.58783,-60.219406</racearea>
+    <racearea sid="TSS_CapFinisterre" loxo="1" closed="1" restricted="1" live="0" frequency="0" refresh="0">43.52333,-10.08583;43.35,-9.60667;43.175,-9.73333;42.88,-9.73333;42.88,-10.22833;43.31583,-10.22833</racearea>
+    <racearea sid="TSS_CaboDeRoca" loxo="1" closed="1" restricted="1" live="0" frequency="0" refresh="0">38.865,-10.23017;38.865,-9.68583;38.6625,-9.66667;38.565,-10.195;38.6825,-10.23167</racearea>
+    <racearea sid="TSS_CaboSaoVincente" loxo="1" closed="1" restricted="1" live="0" frequency="0" refresh="0">37.03833,-9.195;36.94667,-9.165;36.86667,-9.06667;36.8325,-8.9525;36.41333,-9.09667;36.4725,-9.35917;36.73167,-9.66167;36.94333,-9.72</racearea>
+    <racearea sid="TSS_CanariasEast" loxo="1" closed="1" restricted="1" live="0" frequency="0" refresh="0">28.34167,-14.94833;28.33,-14.7925;27.8125,-15.0025;27.86,-15.14667</racearea>
+    <racearea sid="TSS_CanariasWest" loxo="1" closed="1" restricted="1" live="0" frequency="0" refresh="0">28.635,-15.7775;28.56333,-15.65717;27.97667,-16.21583;28.05917,-16.325</racearea>
+    <racearea sid="ArrivalLine" loxo="1" closed="1" restricted="0" live="0" frequency="0" refresh="0">14.58467,-61.048;14.58333,-61.048</racearea>
   </raceareas>
   <gates>
-    <gate name="StartLine" loxo="1">49.55567,0.04217;49.55217,0.05667</gate>
-    <gate name="ArrivalLine_Class40" loxo="1">43.38517,-8.37825;43.38517,-8.38333</gate>
-    <gate name="arrivalLine" loxo="1">14.58783,-61.08;14.58875,-61.0845</gate>
+    <gate name="StartLine" loxo="1">47.54433,-3.02368;47.55057,-3.01317</gate>
   </gates>
   <pointsOfInterest>
     <layer zoom="0">
-      <point name="Le Havre" type="start" lat="49.49380" lng="0.10767" clock="2" scale="1" />
-      <point name="Martinique" type="arrv" lat="14.70863" lng="-61.06635" clock="0" scale="1" />
-      <point name="São Pedro e São Paulo~route ultim" type="buoy" lat="0.91667" lng="-29.34500" clock="2" scale="1" />
-      <point name="gyres_north_atlantic~svr gyr" type="icon" lat="30.00000" lng="-45.00000" clock="0" scale="0" />
-      <point name="tortue~svr gyr" type="icon" lat="20.00000" lng="-45.00000" clock="0" scale="1" />
-      <point name="start_flag~svr" type="icon" lat="14.70863" lng="-61.06635" clock="0" scale="1" />
-      <point name="iceberg_south~svr" type="icon" lat="-70.00000" lng="-40.00000" clock="0" scale="1" />
-      <point name="iceberg_north_east~svr" type="icon" lat="78.00000" lng="80.00000" clock="0" scale="1" />
-      <point name="iceberg_south_east~svr" type="icon" lat="-65.00000" lng="-180.00000" clock="0" scale="1" />
-      <point name="iceberg_north_west~svr" type="icon" lat="76.00000" lng="-140.00000" clock="0" scale="1" />
-      <point name="zit~svr" type="icon" lat="5.00000" lng="-31.00000" clock="0" scale="0" />
-      <point name="albatros~svr" type="icon" lat="-44.00000" lng="123.00000" clock="0" scale="1" />
-      <point name="baleine~svr" type="icon" lat="30.00000" lng="160.00000" clock="0" scale="1" />
-      <point name="leopard~svr" type="icon" lat="-66.00000" lng="-87.00000" clock="0" scale="1" />
-      <point name="sterne~svr" type="icon" lat="23.00000" lng="-68.00000" clock="0" scale="1" />
-      <point name="icefish~svr" type="icon" lat="-60.00000" lng="-15.00000" clock="0" scale="1" />
-      <point name="manchot~svr" type="icon" lat="-70.00000" lng="100.00000" clock="0" scale="1" />
-      <point name="arrow_1~svr" type="icon" lat="44.00000" lng="-40.00000" clock="0" scale="0" />
-      <point name="arrow_2~svr" type="icon" lat="15.00000" lng="-33.00000" clock="0" scale="0" />
-      <point name="arrow_3~svr" type="icon" lat="-2.00000" lng="-7.00000" clock="0" scale="0" />
-      <point name="Afrique~svr" type="ctry" lat="15.00000" lng="15.00000" clock="0" scale="0" />
-      <point name="Amérique du nord~svr" type="ctry" lat="45.00000" lng="-100.00000" clock="0" scale="0" />
-      <point name="Amérique du sud~svr" type="ctry" lat="-10.00000" lng="-57.00000" clock="0" scale="0" />
-      <point name="Europe~svr" type="ctry" lat="55.00000" lng="45.00000" clock="0" scale="0" />
-      <point name="Asie~svr" type="ctry" lat="43.00000" lng="96.00000" clock="0" scale="0" />
-      <point name="Océanie~svr" type="ctry" lat="-26.00000" lng="135.00000" clock="0" scale="0" />
-      <point name="Antarctique~svr" type="ctry" lat="-75.00000" lng="53.00000" clock="0" scale="0" />
-      <point name="Océan Atlantique~svr" type="ctry" lat="53.00000" lng="-31.00000" clock="0" scale="0" />
-      <point name="Océan Indien~svr" type="ctry" lat="-4.00000" lng="75.00000" clock="0" scale="0" />
-      <point name="Océan Antarctique~svr" type="ctry" lat="-63.00000" lng="15.00000" clock="0" scale="0" />
-      <point name="Océan Arctique~svr" type="ctry" lat="82.00000" lng="7.00000" clock="0" scale="0" />
-      <point name="Océan Pacifique~svr" type="ctry" lat="6.00000" lng="-160.00000" clock="0" scale="0" />
-      <point name="copepode~svr gyr" type="icon" lat="40.00000" lng="-36.00000" clock="0" scale="1" />
-      <point name="¤Canaries~route imoca" type="buoy" lat="28.25000" lng="-14.00000" clock="10" scale="1" />
-      <point name="¤Waypoint Canaries A Trib~route oceanfifty" type="buoy" lat="29.50000" lng="-13.08333" clock="0" scale="1" />
-      <point name="¤Waypoint Cap Vert A Trib~route oceanfifty" type="buoy" lat="17.20000" lng="-21.65000" clock="0" scale="1" />
-      <point name="¤Waypoint Cap Vert C Trib~route oceanfifty" type="buoy" lat="14.83333" lng="-23.00000" clock="0" scale="1" />
-      <point name="¤Bouée Le Havre" type="buoy" lat="49.50517" lng="0.02800" clock="0" scale="1" />
-      <point name="¤Bouée Normandie" type="buoy" lat="49.43700" lng="-0.06300" clock="0" scale="1" />
-      <point name="La Corogne" type="arrv" lat="43.36530" lng="-8.39680" clock="5" scale="1" />
-      <point name="¤Phare du Four" type="buoy" lat="48.52308" lng="-4.80517" clock="0" scale="1" />
-      <point name="¤Acores A~route class40" type="buoy" lat="37.21667" lng="-24.66667" clock="0" scale="1" />
-      <point name="¤Acores B~route class40" type="buoy" lat="36.90000" lng="-24.96667" clock="0" scale="1" />
+      <point name="Martim Vaz" type="isle" lat="-20.47517" lng="-28.85203" clock="0" scale="1" />
+      <point name="Trindade et Martim Vaz" type="isle" lat="-20.51120" lng="-29.32673" clock="0" scale="1" />
+      <point name="Fort-de-France" type="arrv" lat="14.60892" lng="-61.07334" clock="9" scale="1" />
+      <point name="La Trinité-sur-Mer" type="start" lat="47.58680" lng="-3.02994" clock="2" scale="1" />
+      <point name="Porto Santo" type="isle" lat="33.06844" lng="-16.34425" clock="10" scale="1" />
+      <point name="¤Teignouse" type="buoy" lat="47.45750" lng="-3.04583" clock="2" scale="1" />
+      <point name="¤BXA" type="buoy" lat="45.56830" lng="-1.44383" clock="2" scale="1" />
     </layer>
-    <layer zoom="300">
-      <point name="¤Waypoint Canaries B Trib~route oceanfifty" type="buoy" lat="28.16667" lng="-13.75000" clock="0" scale="1" />
-      <point name="¤Waypoint Cap Vert B Trib~route oceanfifty" type="buoy" lat="15.66667" lng="-22.08333" clock="0" scale="1" />
-    </layer>
-    <layer zoom="400">
-      <point name="Cap Vert" type="area" lat="16.00000" lng="-24.25000" clock="2" scale="1" />
-      <point name="Canaries" type="area" lat="28.85833" lng="-15.74367" clock="3" scale="1" />
+    <layer zoom="150">
       <point name="Açores" type="area" lat="38.12567" lng="-26.90000" clock="2" scale="1" />
+      <point name="Canaries" type="area" lat="28.85833" lng="-15.74367" clock="3" scale="1" />
+      <point name="Cap Vert" type="area" lat="16.00000" lng="-24.25000" clock="2" scale="1" />
+      <point name="Cap Finisterre" type="city" lat="42.88280" lng="-9.27181" clock="3" scale="1" />
     </layer>
-    <layer zoom="15300">
-      <point name="Rocher du Diamant" type="buoy" lat="14.44333" lng="-61.03833" clock="6" scale="1" />
+    <layer zoom="225">
+      <point name="Pico" type="isle" lat="38.47133" lng="-28.35467" clock="7" scale="1" />
+      <point name="Terceira" type="isle" lat="38.72890" lng="-27.20680" clock="2" scale="1" />
+      <point name="São Miguel" type="isle" lat="37.77917" lng="-25.41517" clock="2" scale="1" />
+      <point name="Lanzarote" type="isle" lat="29.00589" lng="-13.64694" clock="3" scale="1" />
+      <point name="Fuerteventura" type="isle" lat="28.39839" lng="-13.98489" clock="4" scale="1" />
+      <point name="Gran Canaria" type="isle" lat="27.93301" lng="-15.58610" clock="4" scale="1" />
+      <point name="Tenerife" type="isle" lat="28.24227" lng="-16.61593" clock="2" scale="1" />
+      <point name="La Palma" type="isle" lat="28.69208" lng="-17.86149" clock="2" scale="1" />
+    </layer>
+    <layer zoom="250">
+      <point name="San Miguel" type="isle" lat="37.77919" lng="-25.41516" clock="2" scale="1" />
+      <point name="Gomera" type="isle" lat="28.11529" lng="-17.23973" clock="10" scale="1" />
+      <point name="Frontera" type="city" lat="27.75404" lng="-18.00367" clock="4" scale="1" />
+      <point name="Boavista" type="isle" lat="16.09574" lng="-22.81889" clock="2" scale="1" />
+      <point name="Santo Antao" type="isle" lat="17.05152" lng="-25.16858" clock="10" scale="1" />
+      <point name="Santiago" type="isle" lat="15.07131" lng="-23.62780" clock="4" scale="1" />
+    </layer>
+    <layer zoom="325">
+      <point name="Flores" type="isle" lat="39.44355" lng="-31.20781" clock="3" scale="1" />
+      <point name="Faial" type="isle" lat="38.57804" lng="-28.70412" clock="11" scale="1" />
+      <point name="Sao Jorge" type="isle" lat="38.64032" lng="-28.03044" clock="0" scale="1" />
+      <point name="Santa Maria" type="isle" lat="36.97103" lng="-25.09213" clock="11" scale="1" />
+      <point name="Sao Nicolau" type="isle" lat="16.61016" lng="-24.21297" clock="5" scale="1" />
+      <point name="Fogo" type="isle" lat="14.93569" lng="-24.37848" clock="4" scale="1" />
+      <point name="Maio" type="isle" lat="15.21120" lng="-23.16690" clock="2" scale="1" />
+      <point name="Sal" type="isle" lat="16.75245" lng="-22.93965" clock="11" scale="1" />
+    </layer>
+    <layer zoom="350">
+      <point name="Corvo" type="isle" lat="39.70231" lng="-31.10277" clock="2" scale="1" />
+      <point name="Graciosa" type="isle" lat="39.05865" lng="-28.01391" clock="2" scale="1" />
+    </layer>
+    <layer zoom="375">
+      <point name="Madère" type="area" lat="32.79167" lng="-16.45550" clock="2" scale="1" />
+    </layer>
+    <layer zoom="450">
+      <point name="Santa Luzia" type="isle" lat="16.77951" lng="-24.75686" clock="2" scale="1" />
+      <point name="Sao Vicente" type="isle" lat="16.84476" lng="-24.96435" clock="8" scale="1" />
+      <point name="Brava" type="isle" lat="14.85566" lng="-24.71190" clock="7" scale="1" />
+      <point name="Porto-Rico" type="isle" lat="18.20565" lng="-66.45750" clock="2" scale="1" />
+      <point name="Sal" type="isle" lat="16.75245" lng="-22.93965" clock="11" scale="1" />
+    </layer>
+    <layer zoom="500">
+      <point name="São Vicente" type="city" lat="32.79673" lng="-17.04323" clock="7" scale="1" />
+    </layer>
+    <layer zoom="600">
+      <point name="Guadeloupe" type="city" lat="16.25202" lng="-61.55806" clock="2" scale="1" />
+      <point name="Dominique" type="isle" lat="15.43431" lng="-61.34177" clock="2" scale="1" />
+      <point name="Sainte-Lucie" type="isle" lat="13.87419" lng="-60.96478" clock="4" scale="1" />
+      <point name="St Vincent et les Grenadines" type="isle" lat="13.24364" lng="-61.18520" clock="2" scale="1" />
+      <point name="Barbade" type="isle" lat="13.16105" lng="-59.55583" clock="2" scale="1" />
+      <point name="Grenade" type="isle" lat="12.10682" lng="-61.68241" clock="2" scale="1" />
+      <point name="Antigua" type="isle" lat="17.08088" lng="-61.79800" clock="2" scale="1" />
+      <point name="Montserrat" type="isle" lat="16.72070" lng="-62.18565" clock="2" scale="1" />
+      <point name="Nevis" type="isle" lat="17.15052" lng="-62.58799" clock="2" scale="1" />
+      <point name="St Christopher" type="isle" lat="17.34427" lng="-62.77230" clock="2" scale="1" />
+      <point name="Barbuda" type="isle" lat="17.63286" lng="-61.80018" clock="2" scale="1" />
+      <point name="Marie-Galante" type="isle" lat="15.92412" lng="-61.27817" clock="1" scale="1" />
+      <point name="Martinique" type="isle" lat="14.70863" lng="-61.06635" clock="0" scale="1" />
+      <point name="Desertas Islands" type="isle" lat="32.48501" lng="-16.49513" clock="4" scale="1" />
+    </layer>
+    <layer zoom="800">
+      <point name="St Eustatius" type="isle" lat="17.48875" lng="-62.97557" clock="2" scale="1" />
+      <point name="St-Martin" type="isle" lat="18.05810" lng="-63.05245" clock="2" scale="1" />
+      <point name="Saint Barthélemy " type="isle" lat="17.89683" lng="-62.82817" clock="2" scale="1" />
+      <point name="Anguilla" type="isle" lat="18.21903" lng="-63.04219" clock="2" scale="1" />
+      <point name="St-Croix" type="isle" lat="17.72845" lng="-64.75179" clock="2" scale="1" />
+      <point name="Virgin Islands" type="area" lat="18.52663" lng="-64.64896" clock="2" scale="1" />
     </layer>
   </pointsOfInterest>
   <status>
-    <visible>RAC,STA,ARV,RET,STB,CLG,HLD,REF,TRK</visible>
-    <hidden>STM,SUS,DNF,DNS,DNC,DSQ,NL</hidden>
-    <racing>RAC,STA,ARV,STB</racing>
+    <visible>RAC,STA,ARV,PIT,SUS,DNF,DNS,DNC,NYS,DSQ,CNS,RET,STB,CNV,CLG,HLD,REF,TRK</visible>
+    <hidden>STM,NL</hidden>
+    <racing>RAC,STA,ARV,PIT,NYS,STB</racing>
   </status>
   <tracker>
-    <updates range="0" refresh="0">00:00</updates>
-    <sig projection="Mercator" zoommax="800" />
-    <map area="-150,65,230,95">shapes</map>
-    <bathy area="-180,75,360,150">world_75s75n180w180e.png</bathy>
+    <updates range="0" refresh="0">15:00,15:05,15:10,15:15,15:20,15:25,15:30,15:35,15:40,15:45,15:50,15:55,16:00,16:05,16:10,16:15,16:20,16:25,16:30</updates>
+    <sig projection="Mercator" zoommax="400" />
+    <map area="-85,55,95,50">shapes</map>
+    <bathy area="-100,70,110,70">atlantic_00s70n100w10e_small.png</bathy>
     <weather advert="MARINE-WEATHER" step="3" amplitude="96" variables="WIND,GUSTS,CURRENT,WAVES,TEMPAIR,TEMPWATER,CLOUDS" />
     <icelimits north="0" south="0" />
-    <speedgaps over1="240" over2="1440" />
+    <speedgaps over1="0" over2="0" />
   </tracker>
-  <credits>GEOVOILE,BOULAIRE,MARINE-WEATHER</credits>
+  <credits>GEOVOILE_CALCULATION,OCEANTRACKING,MARINE-WEATHER</credits>
 </config>
