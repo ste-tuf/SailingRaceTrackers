@@ -131,9 +131,9 @@ let boatsPath = trackerBasePath + 'live/v' + boatsVersion;
 
 console.log('Downloading boats...');
 downloadReport(boatsPath, function (reportData) {
-	fs.writeFile('./boats.json', reportData, err => {
+	fs.writeFile('./data/boats.json', reportData, err => {
 		if (err) { handleError(err) }
-		console.log('boats.json saved');
+		console.log('data/boats.json saved');
 	});
 });
 
@@ -142,9 +142,9 @@ getTracksVersion(function (tracksVersion) {
 	console.log('Downloading tracks...');
 	let tracksPath = trackerBasePath + 'tracks/v' + tracksVersion;
 	downloadReport(tracksPath, function (reportData) {
-		fs.writeFile('./tracks.json', reportData, err => {
+		fs.writeFile('./data/tracks.json', reportData, err => {
 			if (err) { handleError(err) }
-			console.log('tracks.json saved');
+			console.log('data/tracks.json saved');
 		});
 	});
 });
@@ -154,14 +154,14 @@ getConfigVersion(function (configVersion) {
     console.log('Downloading config...');
     let configPath = trackerBasePath + 'config/v' + configVersion;
     downloadReport(configPath, function (reportData) {
-        fs.access('./config.json', fs.constants.F_OK, (err) => {
+        fs.access('./data/config.json', fs.constants.F_OK, (err) => {
             if (err) {
-                fs.writeFile('./config.json', reportData, err => {
+                fs.writeFile('./data/config.json', reportData, err => {
                     if (err) { handleError(err); }
-                    console.log('config.json saved');
+                    console.log('data/config.json saved');
                 });
             } else {
-                console.log('config.json already exists, skipping');
+                console.log('data/config.json already exists, skipping');
             }
         });
     });
