@@ -1,0 +1,107 @@
+---
+title: "Race Analysis Report - `r format(Sys.time(), '%Y-%m-%d')`"
+author: "SailingRaceTrackers"
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
+format: gfm
+execute:
+  engine: knitr
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+if (!require("gt")) install.packages("gt")
+if (!require("dplyr")) install.packages("dplyr")
+library(gt)
+library(dplyr)
+library(jsonlite)
+TARGET_BOAT <- "TUF TUF TUF Coeur en liberté"
+```
+
+```{r data, echo=FALSE}
+results <- fromJSON(txt = readLines("boats.json", warn = FALSE))
+binfo <- fromJSON("boatinfo.json")
+
+h <- results$reports$history
+latest <- h[nrow(h), ]
+lines_list <- latest$lines[[1]]
+
+n <- length(lines_list)
+d <- data.frame(
+    boat = sapply(lines_list, function(x) as.integer(x[[1]])),
+    rank = sapply(lines_list, function(x) as.integer(x[[3]])),
+    speed = sapply(lines_list, function(x) as.numeric(x[[9]])),
+    vmg = sapply(lines_list, function(x) as.numeric(x[[10]])),
+    dtf = sapply(lines_list, function(x) as.numeric(x[[5]])),
+    dtl = sapply(lines_list, function(x) as.numeric(x[[6]]))
+)
+
+binfo_df <- data.frame(
+    boat = as.integer(names(binfo)),
+    boatName = sapply(binfo, function(x) x$boatName),
+    category = sapply(binfo, function(x) x$category),
+    boatClass = sapply(binfo, function(x) x$boatClass),
+    skipperNames = sapply(binfo, function(x) x$skipperNames)
+)
+
+results_df <- left_join(d, binfo_df, by = "boat")
+df_sorted <- results_df[order(results_df$rank), ]
+
+tuf_row <- results_df[grepl("TUF TUF", results_df$boatName, ignore.case = TRUE), ]
+figaro_boats <- results_df[grepl("Figaro", results_df$boatClass, ignore.case = TRUE), ]
+```
+
+# Race Summary
+
+```{r table1, echo=FALSE}
+df_display <- df_sorted %>%
+    mutate(
+        boat_name = ifelse(grepl("TUF TUF", boatName, ignore.case = TRUE),
+                        paste0(">>> ", boatName, " <<<"),
+                        boatName),
+        boat_name = substr(boat_name, 1, 38)
+    ) %>%
+    head(25) %>%
+    select(rank, boat_name, category, speed, dtf, dtl)
+
+gt(df_display) %>%
+    cols_label(rank = "Rank", boat_name = "Boat", category = "Class",
+               speed = "Speed", dtf = "DTF", dtl = "DTL") %>%
+    fmt_number(columns = c(speed, dtf, dtl), decimals = 1) %>%
+    tab_options(table.font.size = "small")
+```
+
+# TUF TUF Analysis
+
+```{r tuf-info, echo=FALSE, results='asis'}
+if(nrow(tuf_row) > 0) {
+    cat("\n### Info\n\n")
+    cat(paste0("- **Name:** ", tuf_row$boatName, "\n"))
+    cat(paste0("- **Class:** ", tuf_row$category, "\n"))
+    cat(paste0("- **Boat Type:** ", tuf_row$boatClass, "\n"))
+    cat(paste0("- **Skipper:** ", tuf_row$skipperNames, "\n\n"))
+    cat("\n### Performance\n\n")
+    cat(paste0("- **Rank:** ", tuf_row$rank, " / ", nrow(results_df), "\n"))
+    cat(paste0("- **Speed:** ", tuf_row$speed, " kts\n"))
+    cat(paste0("- **VMG:** ", tuf_row$vmg, " kts\n"))
+    cat(paste0("- **DTF:** ", tuf_row$dtf, " nm\n"))
+    cat(paste0("- **DTL:** ", tuf_row$dtl, " nm\n"))
+}
+```
+
+# Figaro Leaderboard
+
+```{r table2, echo=FALSE}
+figaro_display <- figaro_boats[order(figaro_boats$rank), ] %>%
+    mutate(
+        boat_name = ifelse(grepl("TUF TUF", boatName, ignore.case = TRUE),
+                        paste0(">>> ", boatName, " <<<"),
+                        boatName),
+        boat_name = substr(boat_name, 1, 38)
+    ) %>%
+    head(15) %>%
+    select(rank, boat_name, speed, vmg, dtl)
+
+gt(figaro_display) %>%
+    cols_label(rank = "Rank", boat_name = "Boat", speed = "Speed", vmg = "VMG", dtl = "DTL") %>%
+    fmt_number(columns = c(speed, vmg, dtl), decimals = 1) %>%
+    tab_options(table.font.size = "small")
+```

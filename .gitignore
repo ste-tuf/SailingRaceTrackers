@@ -316,3 +316,6 @@ local.xml
 # FIN DU FICHIER .gitignore
 # ============================================================================
 .Rproj.user
+
+/.quarto/
+**/*.quarto_ipynb

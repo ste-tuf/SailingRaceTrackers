@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # SailingRaceTrackers - Main Entry Point
-# Source all functions and run analysis
+# Generates data for Quarto report
 
 suppressPackageStartupMessages({
     if (!require("geodist")) install.packages("geodist", repos = "https://cloud.r-project.org")
@@ -19,60 +19,67 @@ library(here)
 
 options(digits = 3, warn = FALSE)
 
-
 tar_source(here("R"))
 
+TARGET_BOAT <- "TUF TUF TUF Coeur en liberté"
+WIND_DIR <- 75
 
 main <- function() {
-    cat("=== Boat Analysis ===\n\n")
-    cat("Target:", TARGET_BOAT, "\nWind:", WIND_DIR, "deg\n\n")
+    results <- fromJSON("boats_result.json")
 
-    results <- fromJSON("../boats_result.json")
+    if(is.null(results$result) || length(results$result) == 0) {
+        results <- fromJSON("boats.json")
+    }
+
+    if(!file.exists("boatinfo.json")) {
+        cat("Generating boatinfo.json...\n")
+        config_xml <- load_config("config.json")
+        boatinfo <- extract_boat_info(config_xml)
+        save_boatinfo(boatinfo, "boatinfo.json")
+    }
+
     binfo <- fromJSON("boatinfo.json")
 
-    boat_data <- analyze_boat_by_name(TARGET_BOAT, results, binfo)
+    process_results <- function(results, binfo) {
+        history <- results$reports$history
+        if(is.null(history) || nrow(history) == 0) return(data.frame())
 
-    if(is.null(boat_data)) {
-        cat("Boat not found.\n")
-        return()
+        latest <- history[nrow(history), ]
+        lines <- latest$lines[[1]]
+
+        df <- do.call(rbind, lapply(lines, function(x) {
+            data.frame(
+                boat = as.integer(x[[1]]),
+                rank = as.integer(x[[3]]),
+                speed = as.numeric(x[[9]]),
+                vmg = as.numeric(x[[10]]),
+                dtf = as.numeric(x[[5]]),
+                dtl = as.numeric(x[[6]]),
+                stringsAsFactors = FALSE
+            )
+        }))
+
+        df <- df %>%
+            left_join(
+                data.frame(
+                    boat = as.integer(names(binfo)),
+                    boatName = sapply(binfo, function(x) x$boatName),
+                    category = sapply(binfo, function(x) x$category),
+                    boatClass = sapply(binfo, function(x) x$boatClass),
+                    skipperNames = sapply(binfo, function(x) x$skipperNames)
+                ),
+                by = "boat"
+            )
+
+        return(df)
     }
 
-    bid <- boat_data$bid
-    bname <- boat_data$bname
-    bd <- boat_data$bd
+    results_df <- process_results(results, binfo)
 
-    cat("\n---", toupper(bname), "---\n")
-    cat("Class:", boat_data$category, "\n")
-    cat("Rank:", bd$rank, "| Speed:", bd$speed, "kts\n")
-    cat("DTF:", bd$dtf, "nm | DTL:", bd$dtl, "nm\n")
-    cat("24h:", bd$`24hour_distance`, "nm\n")
+    saveRDS(results_df, "results_df.rds")
+    saveRDS(list(target = TARGET_BOAT, wind = WIND_DIR), "params.rds")
 
-    cat("\n--- Track Analysis ---\n")
-    tr <- bd$track
-    if(!is.null(tr)) {
-        if(is.list(tr)) tr <- matrix(unlist(tr), ncol = 2, byrow = TRUE)
-        if(is.matrix(tr)) {
-            cat("Points:", nrow(tr), "\n")
-            man <- analyze_maneuvers(tr)
-            cat("Maneuvers:", man$total, "(tacks:", man$tacks, "| gybes:", man$gybes, ")\n")
-            eff <- calc_efficiency(tr)
-            cat("Efficiency:", round(eff * 100, 1), "%\n")
-
-            cat("\n--- Polar Estimation ---\n")
-            pdat <- estimate_polar(tr, WIND_DIR)
-            ps <- polar_summary(pdat, WIND_DIR)
-            if(!is.null(ps) && nrow(ps) > 0) {
-                if(!is.null(ps$bin)) {
-                    cat("\nTWA Band | Avg Speed | Max Speed\n")
-                    cat("----------|----------|----------\n")
-                    for(i in 1:nrow(ps)) cat(sprintf("%-10s| %8.1f | %9.1f\n", as.character(ps$bin[i]), ps$avg[i], ps$max[i]))
-                } else {
-                    cat("\nOverall: Avg", round(ps$avg, 1), "kts | Max", round(ps$max, 1), "kts\n")
-                }
-            }
-        }
-    }
-    cat("\n=== Done ===\n")
+    cat("Data saved. Run 'quarto render qmd/race_report.qmd' to generate report.\n")
 }
 
 main()
