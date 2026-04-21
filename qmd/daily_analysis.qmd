@@ -55,10 +55,10 @@ TARGET_CATEGORY <- "Figaro 2"  # CHANGE THIS: NULL or specific class
 POLAR_FILE <- NULL  # "polars_figaro2.csv"
 
 # Data paths
-CONFIG_FILE <- "../config.xml"
-RESULTS_FILE <- "../boats_result.json"
-BOATINFO_FILE <- "boatinfo.json"
+CONFIG_FILE <- "../data/config.json"
+RESULTS_FILE <- "../data/boats_result.json"
 
+BOATINFO_FILE <- "../data/boatinfo.json"
 # Analysis parameters
 MANEUVER_ANGLE_THRESHOLD <- 30  # degrees to count as maneuver
 TRACK_SAMPLE_RATE <- 10  # sample every N points for performance

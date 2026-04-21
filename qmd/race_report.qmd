@@ -2,9 +2,6 @@
 title: "Race Analysis Report - `r format(Sys.time(), '%Y-%m-%d')`"
 author: "SailingRaceTrackers"
 date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
-format: gfm
-execute:
-  engine: knitr
 ---
 
 ```{r setup, include=FALSE, echo=FALSE}
@@ -13,26 +10,90 @@ if (!require("dplyr")) install.packages("dplyr")
 library(gt)
 library(dplyr)
 library(jsonlite)
+library(lubridate)
+
+COMPUTATION_TIMES_FILE <- "../data/computation_times.txt"
 TARGET_BOAT <- "TUF TUF TUF Coeur en liberté"
+
+get_computation_time <- function() {
+    if (file.exists(COMPUTATION_TIMES_FILE)) {
+        times <- readLines(COMPUTATION_TIMES_FILE)
+        if (length(times) > 0) {
+            return(ymd_hms(tail(times, 1)))
+        }
+    }
+    return(NULL)
+}
+
+save_computation_time <- function() {
+    current_time <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    write(current_time, file = COMPUTATION_TIMES_FILE, append = TRUE)
+}
+
+parse_history_entry <- function(entry) {
+    lines_list <- entry$lines[[1]]
+    if (is.null(lines_list) || length(lines_list) == 0) return(NULL)
+    
+    data.frame(
+        boat = sapply(lines_list, function(x) as.integer(x[[1]])),
+        rank = sapply(lines_list, function(x) as.integer(x[[3]])),
+        speed = sapply(lines_list, function(x) as.numeric(x[[9]])),
+        vmg = sapply(lines_list, function(x) as.numeric(x[[10]])),
+        dtf = sapply(lines_list, function(x) as.numeric(x[[5]])),
+        dtl = sapply(lines_list, function(x) as.numeric(x[[6]])),
+        dist4h = sapply(lines_list, function(x) as.numeric(x[[12]])),
+        dist24h = sapply(lines_list, function(x) as.numeric(x[[16]])),
+        heading = sapply(lines_list, function(x) as.numeric(x[[8]])),
+        stringsAsFactors = FALSE
+    )
+}
+
+get_history_for_period <- function(history_list, target_time_str, max_hours = NULL) {
+    target_dt <- ymd_hms(target_time_str)
+    
+    valid_entries <- list()
+    for (i in seq_along(history_list)) {
+        entry <- history_list[[i]]
+        entry_date <- ymd_hms(entry$date)
+        hours_diff <- as.numeric(difftime(target_dt, entry_date, units = "hours"))
+        
+        if (!is.null(max_hours)) {
+            if (hours_diff >= 0 && hours_diff <= max_hours) {
+                valid_entries[[length(valid_entries) + 1]] <- list(data = entry, hours = hours_diff)
+            }
+        } else {
+            if (hours_diff >= 0) {
+                valid_entries[[length(valid_entries) + 1]] <- list(data = entry, hours = hours_diff)
+            }
+        }
+    }
+    
+    if (length(valid_entries) == 0) return(NULL)
+    
+    best <- valid_entries[[which.min(sapply(valid_entries, function(x) x$hours))]]
+    list(data = parse_history_entry(best$data), hours_ago = best$hours)
+}
 ```
 
-```{r data, echo=FALSE}
-results <- fromJSON(txt = readLines("boats.json", warn = FALSE))
-binfo <- fromJSON("boatinfo.json")
+```{r load-data, echo=FALSE}
+results <- fromJSON(txt = readLines("../data/boats.json", warn = FALSE))
+binfo <- fromJSON("../data/boatinfo.json")
 
-h <- results$reports$history
-latest <- h[nrow(h), ]
-lines_list <- latest$lines[[1]]
+history_df <- results$reports$history
+n_history <- nrow(history_df)
+latest <- history_df[n_history, ]
+latest_time <- latest$date
+current_data <- parse_history_entry(latest)
 
-n <- length(lines_list)
-d <- data.frame(
-    boat = sapply(lines_list, function(x) as.integer(x[[1]])),
-    rank = sapply(lines_list, function(x) as.integer(x[[3]])),
-    speed = sapply(lines_list, function(x) as.numeric(x[[9]])),
-    vmg = sapply(lines_list, function(x) as.numeric(x[[10]])),
-    dtf = sapply(lines_list, function(x) as.numeric(x[[5]])),
-    dtl = sapply(lines_list, function(x) as.numeric(x[[6]]))
-)
+history_list <- list()
+for (i in 1:n_history) {
+    history_list[[i]] <- list(
+        id = history_df$id[i],
+        date = history_df$date[i],
+        offset = history_df$offset[i],
+        lines = history_df$lines[i]
+    )
+}
 
 binfo_df <- data.frame(
     boat = as.integer(names(binfo)),
@@ -42,14 +103,25 @@ binfo_df <- data.frame(
     skipperNames = sapply(binfo, function(x) x$skipperNames)
 )
 
-results_df <- left_join(d, binfo_df, by = "boat")
+results_df <- left_join(current_data, binfo_df, by = "boat")
 df_sorted <- results_df[order(results_df$rank), ]
 
-tuf_row <- results_df[grepl("TUF TUF", results_df$boatName, ignore.case = TRUE), ]
-figaro_boats <- results_df[grepl("Figaro", results_df$boatClass, ignore.case = TRUE), ]
+last_comp_time <- get_computation_time()
+
+data_since_last <- get_history_for_period(history_list, latest_time, max_hours = 0.5)
+data_4h <- get_history_for_period(history_list, latest_time, max_hours = 4)
+data_24h <- get_history_for_period(history_list, latest_time, max_hours = 24)
+
+save_computation_time()
 ```
 
-# Race Summary
+# Current Status and Ranking
+
+**Report generated:** `r format(Sys.time(), '%Y-%m-%d %H:%M:%S')`  
+**Data timestamp:** `r latest_time`  
+**Last computation:** `r if(!is.null(last_comp_time)) format(last_comp_time, '%Y-%m-%d %H:%M:%S') else "First run"`
+
+## Overall Leaderboard
 
 ```{r table1, echo=FALSE}
 df_display <- df_sorted %>%
@@ -69,10 +141,132 @@ gt(df_display) %>%
     tab_options(table.font.size = "small")
 ```
 
+# Time Trend Analysis
+
+## Since Last Computation
+
+```{r since-last, echo=FALSE, results='asis'}
+if (!is.null(last_comp_time) && !is.null(data_since_last) && !is.null(data_since_last$data)) {
+    cat(paste0("**Comparison period:** ", data_since_last$hours_ago, " hours ago\n\n"))
+    
+    last_data <- data_since_last$data
+    merged <- merge(current_data, last_data, by = "boat", suffixes = c("_now", "_prev"))
+    
+    merged$rank_change <- merged$rank_prev - merged$rank_now
+    merged$dtf_change <- merged$dtf_now - merged$dtf_prev
+    
+    changes <- merged[order(merged$rank_change), ]
+    top_gainers <- head(changes[changes$rank_change > 0, ], 10)
+    top_losers <- head(changes[changes$rank_change < 0, ], 10)
+    
+    cat("### Biggest Gainers\n\n")
+    if (nrow(top_gainers) > 0) {
+        gainers_display <- merge(top_gainers, binfo_df, by = "boat") %>%
+            select(boatName, rank_now, rank_prev, rank_change, dtf_change) %>%
+            rename(Boat = boatName, Current = rank_now, Previous = rank_prev, Change = rank_change, DTF_Diff = dtf_change)
+        print(gainers_display)
+    } else {
+        cat("No rank changes detected.\n")
+    }
+    
+    cat("\n### Biggest Losers\n\n")
+    if (nrow(top_losers) > 0) {
+        losers_display <- merge(top_losers, binfo_df, by = "boat") %>%
+            select(boatName, rank_now, rank_prev, rank_change, dtf_change) %>%
+            rename(Boat = boatName, Current = rank_now, Previous = rank_prev, Change = rank_change, DTF_Diff = dtf_change)
+        print(losers_display)
+    } else {
+        cat("No rank changes detected.\n")
+    }
+} else {
+    cat("No previous computation data available for comparison.\n")
+}
+```
+
+## Last 4 Hours
+
+```{r last-4h, echo=FALSE, results='asis'}
+if (!is.null(data_4h) && !is.null(data_4h$data)) {
+    cat(paste0("**Reference time:** ", round(data_4h$hours_ago, 1), " hours ago\n\n"))
+    
+    ref_data <- data_4h$data
+    merged_4h <- merge(current_data, ref_data, by = "boat", suffixes = c("_now", "_4h"))
+    
+    merged_4h$rank_change_4h <- merged_4h$rank_4h - merged_4h$rank_now
+    merged_4h$dtf_change_4h <- merged_4h$dtf_now - merged_4h$dtf_4h
+    merged_4h$dist_4h <- merged_4h$dtf_4h - merged_4h$dtf_now
+    
+    changes_4h <- merged_4h[order(merged_4h$rank_change_4h), ]
+    top_gainers_4h <- head(changes_4h[changes_4h$rank_change_4h > 0, ], 10)
+    
+    cat("### Top Gainers (Last 4h)\n\n")
+    if (nrow(top_gainers_4h) > 0) {
+        gainers_4h_display <- merge(top_gainers_4h, binfo_df, by = "boat") %>%
+            select(boatName, rank_now, rank_4h, rank_change_4h, dist_4h) %>%
+            rename(Boat = boatName, Current = rank_now, `4h_Ago` = rank_4h, Gain = rank_change_4h, Distance = dist_4h)
+        print(gainers_4h_display)
+    } else {
+        cat("No rank changes in the last 4 hours.\n")
+    }
+    
+    cat("\n### Distance Covered (Last 4h)\n\n")
+    top_dist_4h <- merged_4h[order(-merged_4h$dist_4h), ] %>% head(10)
+    if (nrow(top_dist_4h) > 0) {
+        dist_4h_display <- merge(top_dist_4h, binfo_df, by = "boat") %>%
+            select(boatName, rank_now, dist_4h, speed_now) %>%
+            rename(Boat = boatName, Rank = rank_now, Distance_4h = dist_4h, Speed = speed_now)
+        print(dist_4h_display)
+    }
+} else {
+    cat("No data available for 4-hour comparison.\n")
+}
+```
+
+## Last 24 Hours
+
+```{r last-24h, echo=FALSE, results='asis'}
+if (!is.null(data_24h) && !is.null(data_24h$data)) {
+    cat(paste0("**Reference time:** ", round(data_24h$hours_ago, 1), " hours ago\n\n"))
+    
+    ref_data_24h <- data_24h$data
+    merged_24h <- merge(current_data, ref_data_24h, by = "boat", suffixes = c("_now", "_24h"))
+    
+    merged_24h$rank_change_24h <- merged_24h$rank_24h - merged_24h$rank_now
+    merged_24h$dtf_change_24h <- merged_24h$dtf_now - merged_24h$dtf_24h
+    merged_24h$dist_24h_actual <- merged_24h$dtf_24h - merged_24h$dtf_now
+    
+    changes_24h <- merged_24h[order(merged_24h$rank_change_24h), ]
+    top_gainers_24h <- head(changes_24h[changes_24h$rank_change_24h > 0, ], 10)
+    
+    cat("### Top Gainers (Last 24h)\n\n")
+    if (nrow(top_gainers_24h) > 0) {
+        gainers_24h_display <- merge(top_gainers_24h, binfo_df, by = "boat") %>%
+            select(boatName, rank_now, rank_24h, rank_change_24h, dist_24h_actual) %>%
+            rename(Boat = boatName, Current = rank_now, `24h_Ago` = rank_24h, Gain = rank_change_24h, Distance = dist_24h_actual)
+        print(gainers_24h_display)
+    } else {
+        cat("No rank changes in the last 24 hours.\n")
+    }
+    
+    cat("\n### Distance Covered (Last 24h)\n\n")
+    top_dist_24h <- merged_24h[order(-merged_24h$dist_24h_actual), ] %>% head(10)
+    if (nrow(top_dist_24h) > 0) {
+        dist_24h_display <- merge(top_dist_24h, binfo_df, by = "boat") %>%
+            select(boatName, rank_now, dist_24h_actual, speed_now) %>%
+            rename(Boat = boatName, Rank = rank_now, Distance_24h = dist_24h_actual, Speed = speed_now)
+        print(dist_24h_display)
+    }
+} else {
+    cat("No data available for 24-hour comparison.\n")
+}
+```
+
 # TUF TUF Analysis
 
 ```{r tuf-info, echo=FALSE, results='asis'}
-if(nrow(tuf_row) > 0) {
+tuf_row <- subset(results_df, grepl("TUF TUF", boatName, ignore.case = TRUE))
+
+if(nrow(tuf_row) > 0 && "boatName" %in% names(tuf_row)) {
     cat("\n### Info\n\n")
     cat(paste0("- **Name:** ", tuf_row$boatName, "\n"))
     cat(paste0("- **Class:** ", tuf_row$category, "\n"))
@@ -84,12 +278,32 @@ if(nrow(tuf_row) > 0) {
     cat(paste0("- **VMG:** ", tuf_row$vmg, " kts\n"))
     cat(paste0("- **DTF:** ", tuf_row$dtf, " nm\n"))
     cat(paste0("- **DTL:** ", tuf_row$dtl, " nm\n"))
+    
+    if (!is.null(data_4h) && !is.null(data_4h$data)) {
+        tuf_4h <- subset(data_4h$data, boat == tuf_row$boat)
+        if (nrow(tuf_4h) > 0) {
+            cat("\n### 4h Trend\n\n")
+            cat(paste0("- **Rank change:** ", tuf_4h$rank - tuf_row$rank, "\n"))
+            cat(paste0("- **DTF change:** ", round(tuf_row$dtf - tuf_4h$dtf, 1), " nm\n"))
+        }
+    }
+    
+    if (!is.null(data_24h) && !is.null(data_24h$data)) {
+        tuf_24h <- subset(data_24h$data, boat == tuf_row$boat)
+        if (nrow(tuf_24h) > 0) {
+            cat("\n### 24h Trend\n\n")
+            cat(paste0("- **Rank change:** ", tuf_24h$rank - tuf_row$rank, "\n"))
+            cat(paste0("- **DTF change:** ", round(tuf_row$dtf - tuf_24h$dtf, 1), " nm\n"))
+        }
+    }
 }
 ```
 
 # Figaro Leaderboard
 
 ```{r table2, echo=FALSE}
+figaro_boats <- subset(results_df, grepl("Figaro", boatClass, ignore.case = TRUE))
+
 figaro_display <- figaro_boats[order(figaro_boats$rank), ] %>%
     mutate(
         boat_name = ifelse(grepl("TUF TUF", boatName, ignore.case = TRUE),
@@ -105,3 +319,8 @@ gt(figaro_display) %>%
     fmt_number(columns = c(speed, vmg, dtl), decimals = 1) %>%
     tab_options(table.font.size = "small")
 ```
+
+---
+
+*Report generated automatically by SailingRaceTrackers*
+*Computation times saved to: `r COMPUTATION_TIMES_FILE`*

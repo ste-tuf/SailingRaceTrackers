@@ -355,9 +355,9 @@ generate_daily_summary <- function(results_df, routes = NULL) {
 data_loaded <- FALSE
 
 tryCatch({
-    config <- load_config("../config.xml")
-    results <- load_race_results("../boats_result.json")
-    boat_info <- load_boat_info("boatinfo.json")
+    config <- load_config("../data/config.json")
+    results <- load_race_results("../data/boats_result.json")
+    boat_info <- load_boat_info("../data/boatinfo.json")
     data_loaded <- TRUE
 }, error = function(e) {
     cat("Note: Could not load all data files.\n")
