@@ -33,5 +33,5 @@ jobs:
       - name: Push reports & result to repository
         uses: EndBug/add-and-commit@v9
         with:
-          add: boats.json tracks.json boats_result.json
+          add: data/boats.json data/tracks.json data/boats_result.json
           message: "Update ${{ env.CurrentDT }}h GMT"
