@@ -5,16 +5,19 @@ concurrency:
   cancel-in-progress: true
 on:
   workflow_dispatch:
-  #schedule:
-  #   - cron: "0 */1 * * *"
+  schedule:
+     - cron: "0 */1 * * *"
 jobs:
   Download-reports:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
-      - name: Check out prod-transatcafelor-2025
+      - name: Check out prod-capmartinique-2026
         uses: actions/checkout@v4
         with:
-          ref: prod-transatcafelor-2025
+          ref: prod-capmartinique-2026
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -25,7 +28,8 @@ jobs:
         run: node ./download-reports.js
       - name: Generate result
         run: node ./generate-result.js
-      - run: echo "CurrentDT=$(date +'%d/%m %H')" >> $GITHUB_ENV
+      - name: Set current datetime
+        run: echo "CurrentDT=$(date +'%d/%m %H')" >> $GITHUB_ENV
       - name: Push reports & result to repository
         uses: EndBug/add-and-commit@v9
         with:
