@@ -121,6 +121,50 @@ save_computation_time()
 **Data timestamp:** `r latest_time`  
 **Last computation:** `r if(!is.null(last_comp_time)) format(last_comp_time, '%Y-%m-%d %H:%M:%S') else "First run"`
 
+## TUF TUF Position
+
+```{r tuf-position, echo=FALSE, results='asis'}
+tuf_row <- subset(results_df, grepl("TUF TUF", boatName, ignore.case = TRUE))
+
+if(nrow(tuf_row) > 0 && "boatName" %in% names(tuf_row)) {
+    tuf_boat_id <- tuf_row$boat
+    tuf_result <- fromJSON(txt = readLines("../data/boats_result.json", warn = FALSE))
+    tuf_data <- tuf_result$result[[as.character(tuf_boat_id)]]
+    tuf_track <- tuf_data$track
+    n_rows <- nrow(tuf_track)
+    last_lat <- as.numeric(tuf_track[n_rows, 1])
+    last_lon <- as.numeric(tuf_track[n_rows, 2])
+    ts <- as.POSIXct(tuf_data$timestamp, origin = "1970-01-01", tz = "UTC")
+    
+    lat_d <- floor(abs(last_lat))
+    lat_m <- round((abs(last_lat) - lat_d) * 60, 1)
+    lat_dir <- ifelse(last_lat >= 0, "N", "S")
+    lon_d <- floor(abs(last_lon))
+    lon_m <- round((abs(last_lon) - lon_d) * 60, 1)
+    lon_dir <- ifelse(last_lon >= 0, "E", "W")
+    
+    cat(paste0("**GPS:** ", lat_d, "° ", lat_m, "' ", lat_dir, "  ", lon_d, "° ", lon_m, "' ", lon_dir, "  \n"))
+    cat(paste0("**Position time:** ", format(ts, "%Y-%m-%d %H:%M"), " UTC  \n"))
+    cat(paste0("**", tuf_row$boatName, "** - Rank: **", tuf_row$rank, "** / ", nrow(results_df), "  \n"))
+    cat(paste0("Speed: ", tuf_row$speed, " kts | VMG: ", tuf_row$vmg, " kts  \n"))
+    cat(paste0("DTF: ", tuf_row$dtf, " nm | DTL: ", tuf_row$dtl, " nm  \n"))
+    
+    if (!is.null(data_4h) && !is.null(data_4h$data)) {
+        tuf_4h <- subset(data_4h$data, boat == tuf_row$boat)
+        if (nrow(tuf_4h) > 0) {
+            cat(paste0("  \n4h ago - Rank: ", tuf_4h$rank, " | Rank change: ", tuf_row$rank - tuf_4h$rank, "  \n"))
+        }
+    }
+    
+    if (!is.null(data_24h) && !is.null(data_24h$data)) {
+        tuf_24h <- subset(data_24h$data, boat == tuf_row$boat)
+        if (nrow(tuf_24h) > 0) {
+            cat(paste0("24h ago - Rank: ", tuf_24h$rank, " | Rank change: ", tuf_row$rank - tuf_24h$rank, "  \n"))
+        }
+    }
+}
+```
+
 ## Overall Leaderboard
 
 ```{r table1, echo=FALSE}
