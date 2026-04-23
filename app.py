@@ -175,15 +175,14 @@ with tab1:
     twa_cols = [c for c in stats_df.columns if "TWA" in c]
     all_numeric_cols = speed_cols + vmg_cols
     
+    format_dict = {col: "{:.1f}" for col in all_numeric_cols}
+    format_dict.update({col: "{:.0f}" for col in twa_cols})
+    
     # Apply color scale
     st.dataframe(
-        stats_df.style.format(
-            {col: "{:.0f}" for col in twa_cols},
-            {col: "{:.1f}" for col in all_numeric_cols},
-            na_rep="-"
-        ).background_gradient(
+        stats_df.style.format(format_dict, na_rep="-").background_gradient(
             cmap="RdYlGn",
-            subset=speed_cols + vmg_cols,
+            subset=all_numeric_cols,
             vmin=0
         ),
         use_container_width=True,
