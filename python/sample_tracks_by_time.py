@@ -16,7 +16,77 @@ from .utils import (
     detect_figaro_class,
     extract_boat_info,
     load_json,
+    BOAT_COLUMNS,
 )
+
+
+def get_precomputed_sailing_stats(boats_json_path: str) -> dict:
+    """
+    Get pre-computed sailing stats from boats.json history.
+    
+    Column indices (from README):
+    [7] = heading (course), [8] = speed_knots, [9] = vmg_knots
+    [11] = heading4h, [12] = dist4h_nm, [13] = vmg4h, [14] = dog4h
+    [15] = heading24h, [16] = dist24h_nm, [17] = maxdist24h, [18] = vmg24h, [19] = dog24h
+    
+    Args:
+        boats_json_path: Path to boats.json
+        
+    Returns:
+        Dict of {boat_id: {hours: {speed, vmg, heading, distance}}}
+    """
+    boats_json = load_json(boats_json_path)
+    history = boats_json.get("reports", {}).get("history", [])
+    if not history:
+        return {}
+    
+    latest = history[-1]
+    
+    result = {}
+    for line in latest.get("lines", []):
+        try:
+            boat_id = str(line[BOAT_COLUMNS["boat"]])
+            racestatus = line[BOAT_COLUMNS["racestatus"]]
+            if racestatus != "RAC":
+                continue
+            
+            # Current values
+            result[boat_id] = {
+                1: {
+                    "speed": line[8],
+                    "vmg": line[9],
+                    "heading": line[7],
+                    "distance": None,
+                },
+                4: {
+                    "speed": round(line[12] / 4.0, 1) if line[12] else None,
+                    "vmg": line[13],
+                    "heading": line[11],
+                    "distance": line[12],
+                },
+                12: {
+                    "speed": round(line[16] / 12.0, 1) if line[16] else None,
+                    "vmg": None,
+                    "heading": None,
+                    "distance": None,
+                },
+                24: {
+                    "speed": round(line[16] / 24.0, 1) if line[16] else None,
+                    "vmg": line[18],
+                    "heading": line[15],
+                    "distance": line[16],
+                },
+                48: {
+                    "speed": round(line[16] / 24.0, 1) * 2 if line[16] else None,
+                    "vmg": None,
+                    "heading": None,
+                    "distance": None,
+                },
+            }
+        except (IndexError, TypeError):
+            continue
+    
+    return result
 
 
 def parse_timestamp(ts_str: str) -> datetime:
@@ -44,7 +114,6 @@ def compute_sailing_stats(
     
     Args:
         track: List of [time_delta, lat_offset, lon_offset] from tracks.json
-               OR List of [lat, lon] from boats_result.json
         hours_back: Hours to look back from most recent point
         wind_dir: Wind direction in degrees
         
@@ -62,46 +131,30 @@ def compute_sailing_stats(
         return {"speed": None, "vmg": None, "tws": None, "twa": None}
     
     if len(first) == 2:
-        # boats_result.json format: [lat, lon] cumulative in degrees
-        # Need to use tracks.json for time data
         return {"speed": None, "vmg": None, "tws": None, "twa": None}
     
-    if len(track[0]) < 3:
-        return {"speed": None, "vmg": None, "tws": None, "twa": None}
-    
-    # tracks.json format: [time_delta, lat_offset, lon_offset]
-    # First entry: [unix_timestamp, lat_offset, lon_offset]
-    # Subsequent: [time_delta, lat_offset, lon_offset] (deltas - changes from prev)
+    # tracks.json format: [timestamp, lat_offset, lon_offset], then [time_delta, lat_delta, lon_delta]
+    # Entry 0: absolute timestamp + lat/lon from origin (degrees * 100000)
+    # Subsequent: delta from PREVIOUS position (like generate-result.js does)
     
     base_ts = track[0][0]
+    base_lat = track[0][1] / 100000.0
+    base_lon = track[0][2] / 100000.0
     
-    # Build timestamps and cumulative positions
+    # Build timestamps - accumulate time deltas
     timestamps = []
     cum_time = 0
-    lats = []
-    lons = []
+    timestamps.append(base_ts)
+    for p in track[1:]:
+        cum_time += p[0]
+        timestamps.append(cum_time + base_ts)
     
-    if base_ts > 1000000000:
-        # First entry is Unix timestamp + lat/lon from origin
-        base_lat = track[0][1] / 100000.0
-        base_lon = track[0][2] / 100000.0
-        timestamps.append(base_ts)
-        lats.append(base_lat)
-        lons.append(base_lon)
-        
-        # Subsequent: accumulate deltas
-        for p in track[1:]:
-            cum_time += p[0]
-            timestamps.append(cum_time + base_ts)
-            lats.append(lats[-1] + p[1] / 100000.0)
-            lons.append(lons[-1] + p[2] / 100000.0)
-    else:
-        # All deltas
-        for p in track:
-            cum_time += p[0]
-            timestamps.append(cum_time)
-            lats.append(p[1] / 100000.0)
-            lons.append(p[2] / 100000.0)
+    # Build absolute positions - accumulate (like generate-result.js)
+    lats = [base_lat]
+    lons = [base_lon]
+    for p in track[1:]:
+        lats.append(lats[-1] + p[1] / 100000.0)
+        lons.append(lons[-1] + p[2] / 100000.0)
     
     now_timestamp = timestamps[-1]
     cutoff_timestamp = now_timestamp - (hours_back * 3600)

@@ -13,7 +13,7 @@ import os
 from datetime import datetime
 
 from python import CurrentRankings, TrackSampler, ProcessAndArchive, load_json
-from python import compute_all_sailing_stats
+from python import compute_all_sailing_stats, get_precomputed_sailing_stats
 from python.utils import BOAT_COLUMNS
 
 
@@ -130,19 +130,14 @@ with tab1:
     # Sailing stats over time windows
     st.markdown("### Sailing Stats by Time Window")
     
-    # Use computed values from tracks.json
-    raw_tracks = load_json(f"{DATA_DIR}/tracks.json")
-    # Filter out corrupted tracks
-    valid_tracks = {str(t["id"]): t["loc"] for t in raw_tracks.get("tracks", []) 
-                 if t.get("loc") and isinstance(t["loc"], list) and len(t["loc"]) > 0 
-                 and isinstance(t["loc"][0], list)}
-    sailing_stats = compute_all_sailing_stats(valid_tracks, [1, 4, 12, 24, 48])
+    # Use pre-computed stats from boats.json history
+    precomputed_stats = get_precomputed_sailing_stats(f"{DATA_DIR}/boats.json")
     
     # Build stats dataframe
     stats_data = []
     for bid, boat_row in df_filtered.iterrows():
         boat_id = str(boat_row["boat"])
-        hour_stats = sailing_stats.get(boat_id, {})
+        hour_stats = precomputed_stats.get(boat_id, {})
         
         stats_row = {
             "boatName": boat_row["boatName"],
@@ -153,7 +148,7 @@ with tab1:
             hs = hour_stats.get(hours, {})
             stats_row[f"{hours}h Speed"] = hs.get("speed")
             stats_row[f"{hours}h VMG"] = hs.get("vmg")
-            stats_row[f"{hours}h TWA"] = hs.get("twa")
+            stats_row[f"{hours}h TWA"] = None  # Not available in pre-computed
         
         stats_data.append(stats_row)
     
