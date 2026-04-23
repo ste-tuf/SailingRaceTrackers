@@ -19,9 +19,11 @@ st.title("⛵ Sailing Race Tracker")
 # Sidebar controls
 st.sidebar.header("Settings")
 
+DATA_DIR = "data"
+
 data_source = st.sidebar.radio(
     "Data Source",
-    ["boats.json", "boats_result.json"]
+    [f"{DATA_DIR}/boats.json", f"{DATA_DIR}/boats_result.json"]
 )
 
 config_path = "data/config.json"
@@ -107,9 +109,9 @@ with tab2:
     )
     
     if selected_boats:
-        # Load tracks
+        # Load tracks - always use boats_result.json which has track data
         sampler = TrackSampler()
-        tracks = sampler.sample_all(data_source, interval_minutes=30)
+        tracks = sampler.sample_all("data/boats_result.json", interval_minutes=30)
         
         # Filter tracks - need to get boat IDs
         boat_ids = df_filtered[df_filtered["boatName"].isin(selected_boats)]["boat"].tolist()
