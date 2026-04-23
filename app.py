@@ -13,6 +13,7 @@ import os
 from datetime import datetime
 
 from python import CurrentRankings, TrackSampler, ProcessAndArchive, load_json
+from python import compute_all_sailing_stats
 from python.utils import BOAT_COLUMNS
 
 
@@ -122,6 +123,51 @@ with tab1:
     # Show table
     st.dataframe(
         display_df[["Rank", "boatName", "Class", "Class Rank", "Boat Class", "DTF", "DTL"]],
+        use_container_width=True,
+        hide_index=True
+    )
+    
+    # Sailing stats over time windows
+    st.markdown("### Sailing Stats by Time Window")
+    
+    # Load tracks for stats calculation
+    raw_tracks = load_json(f"{DATA_DIR}/tracks.json")
+    tracks_dict = {str(t["id"]): t["loc"] for t in raw_tracks.get("tracks", [])}
+    sailing_stats = compute_all_sailing_stats(tracks_dict, [1, 4, 12, 24, 48])
+    
+    # Build stats dataframe
+    stats_data = []
+    for bid, boat_row in df_filtered.iterrows():
+        boat_id = str(boat_row["boat"])
+        stats_row = {
+            "boatName": boat_row["boatName"],
+            "Class": boat_row["classType"]
+        }
+        
+        for hours in [1, 4, 12, 24, 48]:
+            hour_stats = sailing_stats.get(boat_id, {}).get(hours, {})
+            stats_row[f"{hours}h Speed"] = hour_stats.get("speed")
+            stats_row[f"{hours}h VMG"] = hour_stats.get("vmg")
+        
+        stats_data.append(stats_row)
+    
+    stats_df = pd.DataFrame(stats_data)
+    
+    # Format for display
+    speed_cols = [c for c in stats_df.columns if "Speed" in c]
+    vmg_cols = [c for c in stats_df.columns if "VMG" in c]
+    all_numeric_cols = speed_cols + vmg_cols
+    
+    # Apply color scale
+    st.dataframe(
+        stats_df.style.format(
+            {col: "{:.1f}" for col in all_numeric_cols},
+            na_rep="-"
+        ).background_gradient(
+            cmap="RdYlGn",
+            subset=speed_cols + vmg_cols,
+            vmin=0
+        ),
         use_container_width=True,
         hide_index=True
     )

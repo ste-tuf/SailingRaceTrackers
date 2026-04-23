@@ -17,7 +17,7 @@ from .extract_current_rankings import (
     get_figaro_rankings,
     filter_by_class
 )
-from .sample_tracks_by_time import TrackSampler, sample_track_at_interval
+from .sample_tracks_by_time import TrackSampler, sample_track_at_interval, compute_sailing_stats, compute_all_sailing_stats
 from .utils import (
     detect_figaro_class,
     extract_boat_info,

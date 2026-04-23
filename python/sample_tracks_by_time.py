@@ -5,6 +5,7 @@ This module provides functions to sample GPS tracks at specified intervals,
 useful for reducing data size or analyzing track segments over time.
 """
 
+import math
 import pandas as pd
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -30,6 +31,132 @@ def parse_timestamp(ts_str: str) -> datetime:
     if ts_str.endswith('Z'):
         ts_str = ts_str[:-1] + '+00:00'
     return datetime.fromisoformat(ts_str.replace('+00:00', ''))
+
+
+def compute_sailing_stats(
+    track: list,
+    hours_back: float,
+    wind_dir: float = 0.0
+) -> dict:
+    """
+    Compute sailing stats for a track segment over specified hours back.
+    
+    Args:
+        track: List of [time_delta_or_timestamp, lat_offset, lon_offset] entries
+               First entry is either Unix timestamp or time delta. 
+               Subsequent entries are time deltas in seconds.
+        hours_back: Hours to look back from most recent point
+        wind_dir: Wind direction in degrees
+        
+    Returns:
+        Dict with speed, vmg, tws, twa
+    """
+    import math
+    
+    if not track or len(track) < 2:
+        return {"speed": None, "vmg": None, "tws": None, "twa": None}
+    
+    if not isinstance(track[0], (list, tuple)) or len(track[0]) < 3:
+        return {"speed": None, "vmg": None, "tws": None, "twa": None}
+    
+    first_val = track[0][0]
+    
+    timestamps = []
+    cum_time = 0
+    for p in track:
+        cum_time += p[0]
+        timestamps.append(cum_time)
+    
+    cum_lats = []
+    cum_lons = []
+    cum_lat = track[0][1] / 100000.0
+    cum_lon = track[0][2] / 100000.0
+    cum_lats.append(cum_lat)
+    cum_lons.append(cum_lon)
+    for p in track[1:]:
+        cum_lat += p[1] / 100000.0
+        cum_lon += p[2] / 100000.0
+        cum_lats.append(cum_lat)
+        cum_lons.append(cum_lon)
+    
+    now_timestamp = timestamps[-1]
+    cutoff_timestamp = now_timestamp - (hours_back * 3600)
+    
+    segment_indices = [i for i, ts in enumerate(timestamps) if ts >= cutoff_timestamp]
+    if len(segment_indices) < 2:
+        start_idx = max(0, len(track) - 50)
+        segment_indices = list(range(start_idx, len(track)))
+    
+    total_distance = 0.0
+    total_time = 0.0
+    
+    for i in range(1, len(segment_indices)):
+        idx_prev = segment_indices[i - 1]
+        idx_curr = segment_indices[i]
+        dt = timestamps[idx_curr] - timestamps[idx_prev]
+        if dt <= 0:
+            continue
+        
+        dlat = cum_lats[idx_curr] - cum_lats[idx_prev]
+        dlon = cum_lons[idx_curr] - cum_lons[idx_prev]
+        dist_deg = (dlat ** 2 + dlon ** 2) ** 0.5
+        dist_km = dist_deg * 111.0
+        dist_meters = dist_km * 1000
+        
+        total_distance += dist_meters
+        total_time += dt
+    
+    if total_time <= 0:
+        return {"speed": None, "vmg": None, "tws": None, "twa": None}
+    
+    avg_speed_ms = total_distance / total_time
+    avg_speed_knots = avg_speed_ms * 1.94384
+    
+    start_idx = segment_indices[0]
+    end_idx = segment_indices[-1]
+    
+    dlat_total = cum_lats[end_idx] - cum_lats[start_idx]
+    dlon_total = cum_lons[end_idx] - cum_lons[start_idx]
+    course = math.atan2(dlon_total, dlat_total)
+    course_deg = math.degrees(course)
+    twa = (course_deg - wind_dir + 360) % 360
+    if twa > 180:
+        twa = 360 - twa
+    
+    vmg = avg_speed_knots * math.cos(math.radians(twa)) if twa < 90 else avg_speed_knots * math.cos(math.radians(180 - twa))
+    
+    return {
+        "speed": round(avg_speed_knots, 1),
+        "vmg": round(abs(vmg), 1),
+        "tws": None,
+        "twa": round(twa, 0)
+    }
+
+
+def compute_all_sailing_stats(
+    tracks_dict: dict,
+    hours_windows: list[float] = [1, 4, 12, 24, 48],
+    wind_dir: float = 0.0
+) -> dict:
+    """
+    Compute sailing stats for all boats over multiple time windows.
+    
+    Args:
+        tracks_dict: Dict of {boat_id: track}
+        hours_windows: List of hours to compute stats for
+        wind_dir: Wind direction
+        
+    Returns:
+        Dict of {boat_id: {1: {...}, 4: {...}, ...}}
+    """
+    result = {}
+    
+    for boat_id, track in tracks_dict.items():
+        result[boat_id] = {}
+        for hours in hours_windows:
+            result[boat_id][hours] = compute_sailing_stats(track, hours, wind_dir)
+    
+    return result
 
 
 def sample_track_at_interval(
