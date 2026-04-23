@@ -5,6 +5,7 @@ This module provides functions to sample GPS tracks at specified intervals,
 useful for reducing data size or analyzing track segments over time.
 """
 
+import json
 import math
 import pandas as pd
 from datetime import datetime, timedelta
@@ -42,9 +43,8 @@ def compute_sailing_stats(
     Compute sailing stats for a track segment over specified hours back.
     
     Args:
-        track: List of [time_delta_or_timestamp, lat_offset, lon_offset] entries
-               First entry is either Unix timestamp or time delta. 
-               Subsequent entries are time deltas in seconds.
+        track: List of [lat, lon] coordinates (degrees, cumulative)
+               OR List of [time_delta, lat_offset, lon_offset] from tracks.json
         hours_back: Hours to look back from most recent point
         wind_dir: Wind direction in degrees
         
@@ -56,28 +56,43 @@ def compute_sailing_stats(
     if not track or len(track) < 2:
         return {"speed": None, "vmg": None, "tws": None, "twa": None}
     
-    if not isinstance(track[0], (list, tuple)) or len(track[0]) < 3:
-        return {"speed": None, "vmg": None, "tws": None, "twa": None}
+    # Check track format: [lat, lon] (boats_result) vs [time, lat, lon] (tracks.json)
+    is_boats_result_format = len(track[0]) == 2
     
-    first_val = track[0][0]
-    
-    timestamps = []
-    cum_time = 0
-    for p in track:
-        cum_time += p[0]
-        timestamps.append(cum_time)
-    
-    cum_lats = []
-    cum_lons = []
-    cum_lat = track[0][1] / 100000.0
-    cum_lon = track[0][2] / 100000.0
-    cum_lats.append(cum_lat)
-    cum_lons.append(cum_lon)
-    for p in track[1:]:
-        cum_lat += p[1] / 100000.0
-        cum_lon += p[2] / 100000.0
-        cum_lats.append(cum_lat)
-        cum_lons.append(cum_lon)
+    if is_boats_result_format:
+        # boats_result.json format: [lat, lon] cumulative in degrees
+        lats = [p[0] for p in track]
+        lons = [p[1] for p in track]
+        
+        # Estimate timestamps from points (assuming ~30min intervals after first point)
+        total_time = len(track) * 1800  # approximate
+        timestamps = [i * 1800 for i in range(len(track))]
+    else:
+        # tracks.json format: [time_delta, lat_offset, lon_offset]
+        base_ts = track[0][0]
+        timestamps = []
+        cum_time = 0
+        if base_ts > 1000000000:
+            timestamps.append(base_ts)
+            for p in track[1:]:
+                cum_time += p[0]
+                timestamps.append(cum_time + base_ts)
+        else:
+            for p in track:
+                cum_time += p[0]
+                timestamps.append(cum_time)
+        
+        lats = []
+        lons = []
+        cum_lat = track[0][1] / 100000.0
+        cum_lon = track[0][2] / 100000.0
+        lats.append(cum_lat)
+        lons.append(cum_lon)
+        for p in track[1:]:
+            cum_lat += p[1] / 100000.0
+            cum_lon += p[2] / 100000.0
+            lats.append(cum_lat)
+            lons.append(cum_lon)
     
     now_timestamp = timestamps[-1]
     cutoff_timestamp = now_timestamp - (hours_back * 3600)
@@ -97,8 +112,8 @@ def compute_sailing_stats(
         if dt <= 0:
             continue
         
-        dlat = cum_lats[idx_curr] - cum_lats[idx_prev]
-        dlon = cum_lons[idx_curr] - cum_lons[idx_prev]
+        dlat = lats[idx_curr] - lats[idx_prev]
+        dlon = lons[idx_curr] - lons[idx_prev]
         dist_deg = (dlat ** 2 + dlon ** 2) ** 0.5
         dist_km = dist_deg * 111.0
         dist_meters = dist_km * 1000
@@ -115,8 +130,8 @@ def compute_sailing_stats(
     start_idx = segment_indices[0]
     end_idx = segment_indices[-1]
     
-    dlat_total = cum_lats[end_idx] - cum_lats[start_idx]
-    dlon_total = cum_lons[end_idx] - cum_lons[start_idx]
+    dlat_total = lats[end_idx] - lats[start_idx]
+    dlon_total = lons[end_idx] - lons[start_idx]
     course = math.atan2(dlon_total, dlat_total)
     course_deg = math.degrees(course)
     twa = (course_deg - wind_dir + 360) % 360

@@ -130,20 +130,16 @@ with tab1:
     # Sailing stats over time windows
     st.markdown("### Sailing Stats by Time Window")
     
-    # Load pre-computed stats from boats_result
+    # Use processed tracks from boats_result.json
     boats_result = load_json(f"{DATA_DIR}/boats_result.json")
+    tracks_dict = {bid: data.get("track", []) for bid, data in boats_result.get("result", {}).items()}
+    sailing_stats = compute_all_sailing_stats(tracks_dict, [1, 4, 12, 24, 48])
     
-    # Load computed stats from tracks
-    raw_tracks = load_json(f"{DATA_DIR}/tracks.json")
-    tracks_dict = {str(t["id"]): t["loc"] for t in raw_tracks.get("tracks", [])}
-    computed_stats = compute_all_sailing_stats(tracks_dict, [4, 12, 48])
-    
-    # Build stats dataframe using pre-computed (1h, 24h) and computed (4h, 12h, 48h)
+    # Build stats dataframe using computed values
     stats_data = []
     for bid, boat_row in df_filtered.iterrows():
         boat_id = str(boat_row["boat"])
-        br = boats_result.get("result", {}).get(boat_id, {})
-        cs = computed_stats.get(boat_id, {})
+        hour_stats = sailing_stats.get(boat_id, {})
         
         stats_row = {
             "boatName": boat_row["boatName"],
@@ -151,19 +147,10 @@ with tab1:
         }
         
         for hours in [1, 4, 12, 24, 48]:
-            if hours in [1, 24]:
-                speed = br.get(f"{hours}hour_speed")
-                vmg = br.get(f"{hours}hour_vmg")
-                twa = None
-            else:
-                hour_stats = cs.get(hours, {})
-                speed = hour_stats.get("speed")
-                vmg = hour_stats.get("vmg")
-                twa = hour_stats.get("twa")
-            
-            stats_row[f"{hours}h Speed"] = speed if speed and speed > 0 else None
-            stats_row[f"{hours}h VMG"] = vmg if vmg and vmg > 0 else None
-            stats_row[f"{hours}h TWA"] = twa if twa and twa > 0 else None
+            hs = hour_stats.get(hours, {})
+            stats_row[f"{hours}h Speed"] = hs.get("speed")
+            stats_row[f"{hours}h VMG"] = hs.get("vmg")
+            stats_row[f"{hours}h TWA"] = hs.get("twa")
         
         stats_data.append(stats_row)
     
