@@ -279,6 +279,9 @@ junit.xml
 *.sqlite3
 *.mdb
 
+# Processed data archives
+data/processed/
+
 # Fichiers de configuration locale
 local.properties
 local.xml
@@ -321,3 +324,7 @@ local.xml
 **/*.quarto_ipynb
 /_freeze
 /_site
+
+# R data files
+*.rds
+results_df.rds
