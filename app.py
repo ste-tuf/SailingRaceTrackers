@@ -130,24 +130,40 @@ with tab1:
     # Sailing stats over time windows
     st.markdown("### Sailing Stats by Time Window")
     
-    # Load tracks for stats calculation
+    # Load pre-computed stats from boats_result
+    boats_result = load_json(f"{DATA_DIR}/boats_result.json")
+    
+    # Load computed stats from tracks
     raw_tracks = load_json(f"{DATA_DIR}/tracks.json")
     tracks_dict = {str(t["id"]): t["loc"] for t in raw_tracks.get("tracks", [])}
-    sailing_stats = compute_all_sailing_stats(tracks_dict, [1, 4, 12, 24, 48])
+    computed_stats = compute_all_sailing_stats(tracks_dict, [4, 12, 48])
     
-    # Build stats dataframe
+    # Build stats dataframe using pre-computed (1h, 24h) and computed (4h, 12h, 48h)
     stats_data = []
     for bid, boat_row in df_filtered.iterrows():
         boat_id = str(boat_row["boat"])
+        br = boats_result.get("result", {}).get(boat_id, {})
+        cs = computed_stats.get(boat_id, {})
+        
         stats_row = {
             "boatName": boat_row["boatName"],
             "Class": boat_row["classType"]
         }
         
         for hours in [1, 4, 12, 24, 48]:
-            hour_stats = sailing_stats.get(boat_id, {}).get(hours, {})
-            stats_row[f"{hours}h Speed"] = hour_stats.get("speed")
-            stats_row[f"{hours}h VMG"] = hour_stats.get("vmg")
+            if hours in [1, 24]:
+                speed = br.get(f"{hours}hour_speed")
+                vmg = br.get(f"{hours}hour_vmg")
+                twa = None
+            else:
+                hour_stats = cs.get(hours, {})
+                speed = hour_stats.get("speed")
+                vmg = hour_stats.get("vmg")
+                twa = hour_stats.get("twa")
+            
+            stats_row[f"{hours}h Speed"] = speed if speed and speed > 0 else None
+            stats_row[f"{hours}h VMG"] = vmg if vmg and vmg > 0 else None
+            stats_row[f"{hours}h TWA"] = twa if twa and twa > 0 else None
         
         stats_data.append(stats_row)
     
@@ -156,11 +172,13 @@ with tab1:
     # Format for display
     speed_cols = [c for c in stats_df.columns if "Speed" in c]
     vmg_cols = [c for c in stats_df.columns if "VMG" in c]
+    twa_cols = [c for c in stats_df.columns if "TWA" in c]
     all_numeric_cols = speed_cols + vmg_cols
     
     # Apply color scale
     st.dataframe(
         stats_df.style.format(
+            {col: "{:.0f}" for col in twa_cols},
             {col: "{:.1f}" for col in all_numeric_cols},
             na_rep="-"
         ).background_gradient(
