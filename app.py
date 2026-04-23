@@ -65,7 +65,7 @@ all_classes = sorted(df_rankings["boatClass"].dropna().unique().tolist())
 selected_classes = st.sidebar.multiselect(
     "Boat Class",
     all_classes,
-    default=all_classes[:3] if len(all_classes) > 3 else all_classes
+    default=[]
 )
 
 # Filter by target boat
