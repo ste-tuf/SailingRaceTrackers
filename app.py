@@ -85,10 +85,20 @@ tab1, tab2, tab3 = st.tabs(["🏆 Rankings", "🗺️ Tracks", "📊 Analysis"])
 with tab1:
     st.subheader("Current Rankings")
     
+    # Add class type (Duo/solo) and class-specific rank
+    df_filtered = df_filtered.copy()
+    df_filtered["classType"] = df_filtered["category"].apply(lambda x: "Duo" if str(x).lower() == "duo" else "Solo")
+    
+    # Calculate class rank by DTF (lower is better)
+    df_filtered["classRank"] = df_filtered.groupby("classType")["dtf"].rank(method="min").astype(int)
+    
+    # Overall rank by DTF
+    df_filtered["overallRank"] = df_filtered["dtf"].rank(method="min").astype(int)
+    
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Boats", len(df_filtered))
-    col2.metric("Figaro Boats", len(df_filtered[df_filtered["boatClass"].str.contains("Figaro", case=False, na=False)]))
-    col3.metric("Target Rank", df_filtered[df_filtered["boatName"].str.contains(target_boat, case=False, na=False)]["rank"].min() if len(df_filtered[df_filtered["boatName"].str.contains(target_boat, case=False, na=False)]) > 0 else "-")
+    col2.metric("Duo Boats", len(df_filtered[df_filtered["classType"] == "Duo"]))
+    col3.metric("Target DTF Rank", df_filtered[df_filtered["boatName"].str.contains(target_boat, case=False, na=False)]["overallRank"].min() if len(df_filtered[df_filtered["boatName"].str.contains(target_boat, case=False, na=False)]) > 0 else "-")
     
     # Format for display
     display_df = df_filtered.copy()
@@ -96,12 +106,22 @@ with tab1:
         lambda x: f"⭐ {x}" if target_boat.lower() in str(x).lower() else x
     )
     
-    # Sort by rank
-    display_df = display_df.sort_values("rank")
+    # Sort by DTF (lower is better for racing)
+    display_df = display_df.sort_values("dtf")
+    
+    # Rename columns for display
+    display_df = display_df.rename(columns={
+        "overallRank": "Rank",
+        "classType": "Class",
+        "classRank": "Class Rank",
+        "boatClass": "Boat Class",
+        "dtf": "DTF",
+        "dtl": "DTL"
+    })
     
     # Show table
     st.dataframe(
-        display_df[["rank", "boatName", "boatClass", "speed", "vmg", "dtf", "dtl", "heading"]],
+        display_df[["Rank", "boatName", "Class", "Class Rank", "Boat Class", "DTF", "DTL"]],
         use_container_width=True,
         hide_index=True
     )
