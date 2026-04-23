@@ -130,12 +130,15 @@ with tab1:
     # Sailing stats over time windows
     st.markdown("### Sailing Stats by Time Window")
     
-    # Use processed tracks from boats_result.json
-    boats_result = load_json(f"{DATA_DIR}/boats_result.json")
-    tracks_dict = {bid: data.get("track", []) for bid, data in boats_result.get("result", {}).items()}
-    sailing_stats = compute_all_sailing_stats(tracks_dict, [1, 4, 12, 24, 48])
+    # Use computed values from tracks.json
+    raw_tracks = load_json(f"{DATA_DIR}/tracks.json")
+    # Filter out corrupted tracks
+    valid_tracks = {str(t["id"]): t["loc"] for t in raw_tracks.get("tracks", []) 
+                 if t.get("loc") and isinstance(t["loc"], list) and len(t["loc"]) > 0 
+                 and isinstance(t["loc"][0], list)}
+    sailing_stats = compute_all_sailing_stats(valid_tracks, [1, 4, 12, 24, 48])
     
-    # Build stats dataframe using computed values
+    # Build stats dataframe
     stats_data = []
     for bid, boat_row in df_filtered.iterrows():
         boat_id = str(boat_row["boat"])

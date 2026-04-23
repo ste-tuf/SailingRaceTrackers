@@ -43,8 +43,8 @@ def compute_sailing_stats(
     Compute sailing stats for a track segment over specified hours back.
     
     Args:
-        track: List of [lat, lon] coordinates (degrees, cumulative)
-               OR List of [time_delta, lat_offset, lon_offset] from tracks.json
+        track: List of [time_delta, lat_offset, lon_offset] from tracks.json
+               OR List of [lat, lon] from boats_result.json
         hours_back: Hours to look back from most recent point
         wind_dir: Wind direction in degrees
         
@@ -56,43 +56,52 @@ def compute_sailing_stats(
     if not track or len(track) < 2:
         return {"speed": None, "vmg": None, "tws": None, "twa": None}
     
-    # Check track format: [lat, lon] (boats_result) vs [time, lat, lon] (tracks.json)
-    is_boats_result_format = len(track[0]) == 2
+    # Check track format
+    first = track[0]
+    if isinstance(first, int):
+        return {"speed": None, "vmg": None, "tws": None, "twa": None}
     
-    if is_boats_result_format:
+    if len(first) == 2:
         # boats_result.json format: [lat, lon] cumulative in degrees
-        lats = [p[0] for p in track]
-        lons = [p[1] for p in track]
+        # Need to use tracks.json for time data
+        return {"speed": None, "vmg": None, "tws": None, "twa": None}
+    
+    if len(track[0]) < 3:
+        return {"speed": None, "vmg": None, "tws": None, "twa": None}
+    
+    # tracks.json format: [time_delta, lat_offset, lon_offset]
+    # First entry: [unix_timestamp, lat_offset, lon_offset]
+    # Subsequent: [time_delta, lat_offset, lon_offset] (deltas - changes from prev)
+    
+    base_ts = track[0][0]
+    
+    # Build timestamps and cumulative positions
+    timestamps = []
+    cum_time = 0
+    lats = []
+    lons = []
+    
+    if base_ts > 1000000000:
+        # First entry is Unix timestamp + lat/lon from origin
+        base_lat = track[0][1] / 100000.0
+        base_lon = track[0][2] / 100000.0
+        timestamps.append(base_ts)
+        lats.append(base_lat)
+        lons.append(base_lon)
         
-        # Estimate timestamps from points (assuming ~30min intervals after first point)
-        total_time = len(track) * 1800  # approximate
-        timestamps = [i * 1800 for i in range(len(track))]
-    else:
-        # tracks.json format: [time_delta, lat_offset, lon_offset]
-        base_ts = track[0][0]
-        timestamps = []
-        cum_time = 0
-        if base_ts > 1000000000:
-            timestamps.append(base_ts)
-            for p in track[1:]:
-                cum_time += p[0]
-                timestamps.append(cum_time + base_ts)
-        else:
-            for p in track:
-                cum_time += p[0]
-                timestamps.append(cum_time)
-        
-        lats = []
-        lons = []
-        cum_lat = track[0][1] / 100000.0
-        cum_lon = track[0][2] / 100000.0
-        lats.append(cum_lat)
-        lons.append(cum_lon)
+        # Subsequent: accumulate deltas
         for p in track[1:]:
-            cum_lat += p[1] / 100000.0
-            cum_lon += p[2] / 100000.0
-            lats.append(cum_lat)
-            lons.append(cum_lon)
+            cum_time += p[0]
+            timestamps.append(cum_time + base_ts)
+            lats.append(lats[-1] + p[1] / 100000.0)
+            lons.append(lons[-1] + p[2] / 100000.0)
+    else:
+        # All deltas
+        for p in track:
+            cum_time += p[0]
+            timestamps.append(cum_time)
+            lats.append(p[1] / 100000.0)
+            lons.append(p[2] / 100000.0)
     
     now_timestamp = timestamps[-1]
     cutoff_timestamp = now_timestamp - (hours_back * 3600)
@@ -114,7 +123,7 @@ def compute_sailing_stats(
         
         dlat = lats[idx_curr] - lats[idx_prev]
         dlon = lons[idx_curr] - lons[idx_prev]
-        dist_deg = (dlat ** 2 + dlon ** 2) ** 0.5
+        dist_deg = math.sqrt(dlat**2 + dlon**2)
         dist_km = dist_deg * 111.0
         dist_meters = dist_km * 1000
         
@@ -132,17 +141,21 @@ def compute_sailing_stats(
     
     dlat_total = lats[end_idx] - lats[start_idx]
     dlon_total = lons[end_idx] - lons[start_idx]
+    
+    if abs(dlat_total) < 0.0001 and abs(dlon_total) < 0.0001:
+        return {"speed": round(avg_speed_knots, 1), "vmg": round(avg_speed_knots, 1), "tws": None, "twa": 0}
+    
     course = math.atan2(dlon_total, dlat_total)
     course_deg = math.degrees(course)
     twa = (course_deg - wind_dir + 360) % 360
     if twa > 180:
         twa = 360 - twa
     
-    vmg = avg_speed_knots * math.cos(math.radians(twa)) if twa < 90 else avg_speed_knots * math.cos(math.radians(180 - twa))
+    vmg = avg_speed_knots * abs(math.cos(math.radians(twa)))
     
     return {
         "speed": round(avg_speed_knots, 1),
-        "vmg": round(abs(vmg), 1),
+        "vmg": round(vmg, 1),
         "tws": None,
         "twa": round(twa, 0)
     }
