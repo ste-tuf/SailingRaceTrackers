@@ -24,6 +24,7 @@ from .utils import (
     load_json,
     load_xml_config,
     save_json,
+    BOAT_COLUMNS,
 )
 
 __all__ = [
@@ -44,4 +45,5 @@ __all__ = [
     'load_json',
     'load_xml_config',
     'save_json',
+    'BOAT_COLUMNS',
 ]

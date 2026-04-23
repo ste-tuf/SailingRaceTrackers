@@ -8,65 +8,87 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import glob
+import os
+from datetime import datetime
 
-from python import CurrentRankings, TrackSampler, ProcessAndArchive
+from python import CurrentRankings, TrackSampler, ProcessAndArchive, load_json
+from python.utils import BOAT_COLUMNS
 
 
 st.set_page_config(page_title="Sailing Race Tracker", layout="wide")
 
 st.title("⛵ Sailing Race Tracker")
 
-# Sidebar controls
-st.sidebar.header("Settings")
-
 DATA_DIR = "data"
 
-data_source = st.sidebar.radio(
-    "Data Source",
-    [f"{DATA_DIR}/boats.json", f"{DATA_DIR}/boats_result.json"]
-)
-
-config_path = "data/config.json"
-
-# Load data
+# Load all data sources at startup
 @st.cache_data
-def load_rankings(path):
-    return CurrentRankings().load(path)
+def load_all_data():
+    """Load all data sources and merge them."""
+    # Rankings from boats.json
+    df_rankings = CurrentRankings().load(f"{DATA_DIR}/boats.json")
+    
+    # Tracks from boats_result.json
+    sampler = TrackSampler()
+    tracks = sampler.sample_all(f"{DATA_DIR}/boats_result.json", interval_minutes=30)
+    
+    # Load raw tracks for timestamps
+    raw_tracks = load_json(f"{DATA_DIR}/tracks.json")
+    
+    # Latest timestamp
+    boats_json = load_json(f"{DATA_DIR}/boats.json")
+    history = boats_json.get("reports", {}).get("history", [])
+    latest_timestamp = history[-1].get("date") if history else None
+    
+    return df_rankings, tracks, raw_tracks, latest_timestamp
 
-df = load_rankings(data_source)
+df_rankings, tracks, raw_tracks, latest_timestamp = load_all_data()
 
-if df.empty:
+if df_rankings.empty:
     st.error("No data found")
     st.stop()
+
+# Sidebar controls
+st.sidebar.header("Settings")
+st.sidebar.caption(f"Data: {latest_timestamp or 'unknown'}")
 
 # Main filters
 st.sidebar.subheader("Filters")
 
-# Boat class filter
-all_classes = sorted(df["boatClass"].dropna().unique().tolist())
+# Target boat
+target_boat = "TUF TUF"
+st.sidebar.text_input("Target Boat", value=target_boat, key="target_input")
+
+# Boat class filter - using all classes from rankings
+all_classes = sorted(df_rankings["boatClass"].dropna().unique().tolist())
 selected_classes = st.sidebar.multiselect(
     "Boat Class",
     all_classes,
     default=all_classes[:3] if len(all_classes) > 3 else all_classes
 )
 
+# Filter by target boat
+show_target_only = st.sidebar.checkbox("Show Target Boat Only", value=False)
+
 # Filter dataframe
+df_filtered = df_rankings.copy()
 if selected_classes:
-    df_filtered = df[df["boatClass"].isin(selected_classes)]
-else:
-    df_filtered = df
+    df_filtered = df_filtered[df_filtered["boatClass"].isin(selected_classes)]
+if show_target_only:
+    target_val = st.session_state.target_input
+    df_filtered = df_filtered[df_filtered["boatName"].str.contains(target_val, case=False, na=False)]
 
 # Tab layout
-tab1, tab2, tab3 = st.tabs(["🏆 Rankings", "🗺️ Tracks", "⚙️ Process"])
+tab1, tab2, tab3 = st.tabs(["🏆 Rankings", "🗺️ Tracks", "📊 Analysis"])
 
 with tab1:
     st.subheader("Current Rankings")
     
-    # Show total boats
-    st.metric("Total Boats", len(df_filtered))
-    
-    # Highlight target boat
-    target_boat = "TUF TUF"
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Boats", len(df_filtered))
+    col2.metric("Figaro Boats", len(df_filtered[df_filtered["boatClass"].str.contains("Figaro", case=False, na=False)]))
+    col3.metric("Target Rank", df_filtered[df_filtered["boatName"].str.contains(target_boat, case=False, na=False)]["rank"].min() if len(df_filtered[df_filtered["boatName"].str.contains(target_boat, case=False, na=False)]) > 0 else "-")
     
     # Format for display
     display_df = df_filtered.copy()
@@ -83,55 +105,39 @@ with tab1:
         use_container_width=True,
         hide_index=True
     )
-    
-    # Top gainers chart
-    st.subheader("Speed vs DTF")
-    fig = px.scatter(
-        display_df,
-        x="dtf",
-        y="speed",
-        color="boatClass",
-        hover_name="boatName",
-        size="rank",
-        title="Speed vs Distance to Finish"
-    )
-    st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
     st.subheader("GPS Tracks")
     
     # Select boats to display
-    boat_names = df_filtered["boatName"].tolist()
+    boat_options = df_filtered["boatName"].tolist()
     selected_boats = st.multiselect(
         "Select boats to display",
-        boat_names,
-        default=boat_names[:3] if len(boat_names) > 3 else boat_names[:1]
+        boat_options,
+        default=boat_options[:3] if len(boat_options) > 3 else boat_options[:1]
     )
     
     if selected_boats:
-        # Load tracks - always use boats_result.json which has track data
-        sampler = TrackSampler()
-        tracks = sampler.sample_all("data/boats_result.json", interval_minutes=30)
-        
-        # Filter tracks - need to get boat IDs
-        boat_ids = df_filtered[df_filtered["boatName"].isin(selected_boats)]["boat"].tolist()
-        
         # Create map
         fig = go.Figure()
         
         colors = px.colors.qualitative.Plotly
         
-        for i, boat_id in enumerate(boat_ids):
+        for i, boat_name in enumerate(selected_boats):
+            boat_row = df_filtered[df_filtered["boatName"] == boat_name]
+            if len(boat_row) == 0:
+                continue
+            boat_id = boat_row["boat"].iloc[0]
             track = tracks.get(str(boat_id), [])
+            
             if track:
                 lats = [p[0] for p in track]
                 lons = [p[1] for p in track]
-                name = df_filtered[df_filtered["boat"] == boat_id]["boatName"].iloc[0]
                 fig.add_trace(go.Scattermapbox(
                     lat=lats,
                     lon=lons,
                     mode="lines+markers",
-                    name=name,
+                    name=boat_name,
                     marker=dict(size=6, color=colors[i % len(colors)]),
                     line=dict(width=2)
                 ))
@@ -152,37 +158,83 @@ with tab2:
         st.info("Select boats to display tracks")
 
 with tab3:
-    st.subheader("Process & Archive")
+    st.subheader("Race Analysis")
     
-    st.info("Process race data and create timestamped archive")
+    # Speed vs DTF scatter
+    fig_scatter = px.scatter(
+        df_filtered,
+        x="dtf",
+        y="speed",
+        color="boatClass",
+        hover_name="boatName",
+        size="rank",
+        title="Speed vs Distance to Finish"
+    )
+    st.plotly_chart(fig_scatter, use_container_width=True)
     
-    if st.button("Create Archive"):
-        with st.spinner("Processing..."):
-            try:
-                arch_path = ProcessAndArchive().run(
-                    config_path=config_path,
-                    boats_json_path="data/boats.json",
-                    tracks_json_path="data/tracks.json",
-                    output_dir="data/processed"
-                )
-                st.success(f"Archive created: {arch_path}")
-            except Exception as e:
-                st.error(f"Error: {e}")
+    # Rankings over time (from history)
+    st.subheader("Rank History")
     
-    # Show existing archives
-    import os
-    import glob
+    # Load history data
+    boats_json = load_json(f"{DATA_DIR}/boats.json")
+    history = boats_json.get("reports", {}).get("history", [])
     
-    st.subheader("Existing Archives")
-    archives = glob.glob("data/processed/*.json")
-    archives = sorted(archives, reverse=True)
-    
-    if archives:
-        for arch in archives[:5]:
-            ts = os.path.basename(arch).replace(".json", "")
-            st.text(f"📁 {ts}")
+    if history and len(history) > 1:
+        # Parse history into time series
+        target_id = df_rankings[df_rankings["boatName"].str.contains(target_boat, case=False, na=False)]["boat"].iloc[0]
+        
+        history_data = []
+        for entry in history:
+            entry_date = entry.get("date", "")
+            lines = entry.get("lines", [])
+            for line in lines:
+                if line[BOAT_COLUMNS["racestatus"]] == "RAC" and int(line[BOAT_COLUMNS["boat"]]) == target_id:
+                    history_data.append({
+                        "time": entry_date,
+                        "rank": line[BOAT_COLUMNS["rank"]],
+                        "speed": line[BOAT_COLUMNS["speed"]],
+                        "dtf": line[BOAT_COLUMNS["dtf"]],
+                        "dtl": line[BOAT_COLUMNS["dtl"]]
+                    })
+        
+        if history_data:
+            hist_df = pd.DataFrame(history_data)
+            hist_df["time"] = pd.to_datetime(hist_df["time"])
+            hist_df = hist_df.sort_values("time")
+            
+            # Rank over time
+            fig_rank = px.line(hist_df, x="time", y="rank", markers=True, title=f"{target_boat} Rank Over Time")
+            fig_rank.update_yaxes(autorange="reversed")
+            st.plotly_chart(fig_rank, use_container_width=True)
+            
+            # DTF over time
+            fig_dtf = px.line(hist_df, x="time", y="dtf", markers=True, title=f"{target_boat} Distance to Finish Over Time")
+            st.plotly_chart(fig_dtf, use_container_width=True)
     else:
-        st.info("No archives yet")
+        st.info("No historical data available")
+    
+    st.subheader("Process Data")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("Create Archive"):
+            with st.spinner("Processing..."):
+                try:
+                    arch_path = ProcessAndArchive().run(
+                        config_path=f"{DATA_DIR}/config.json",
+                        boats_json_path=f"{DATA_DIR}/boats.json",
+                        tracks_json_path=f"{DATA_DIR}/tracks.json",
+                        output_dir=f"{DATA_DIR}/processed"
+                    )
+                    st.success(f"Archive: {os.path.basename(arch_path)}")
+                except Exception as e:
+                    st.error(f"Error: {e}")
+    
+    with col2:
+        archives = sorted(glob.glob(f"{DATA_DIR}/processed/*.json"), reverse=True)
+        if archives:
+            st.caption(f"Latest: {os.path.basename(archives[0])}")
 
 # Footer
 st.sidebar.markdown("---")
