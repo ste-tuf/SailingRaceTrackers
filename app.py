@@ -29,9 +29,9 @@ def load_all_data():
     # Rankings from boats.json
     df_rankings = CurrentRankings().load(f"{DATA_DIR}/boats.json")
     
-    # Tracks from boats_result.json
-    sampler = TrackSampler()
-    tracks = sampler.sample_all(f"{DATA_DIR}/boats_result.json", interval_minutes=30)
+    # Load full tracks directly from boats_result.json (no downsampling)
+    raw_results = load_json(f"{DATA_DIR}/boats_result.json")
+    tracks = {bid: data.get('track', []) for bid, data in raw_results.get('result', {}).items()}
     
     # Load raw tracks for timestamps
     raw_tracks = load_json(f"{DATA_DIR}/tracks.json")
