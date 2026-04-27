@@ -11,7 +11,6 @@ import plotly.graph_objects as go
 import glob
 import os
 import io
-import zipfile
 from datetime import datetime
 
 from python import CurrentRankings, TrackSampler, ProcessAndArchive, load_json
@@ -45,14 +44,14 @@ def load_all_data():
     # Load raw tracks for timestamps
     raw_tracks = load_json(f"{DATA_DIR}/tracks.json")
     
-    # Latest timestamp
+    # Load boats.json once for history
     boats_json = load_json(f"{DATA_DIR}/boats.json")
     history = boats_json.get("reports", {}).get("history", [])
     latest_timestamp = history[-1].get("date") if history else None
     
-    return df_rankings, tracks, raw_tracks, latest_timestamp
+    return df_rankings, tracks, raw_tracks, latest_timestamp, history
 
-df_rankings, tracks, raw_tracks, latest_timestamp = load_all_data()
+df_rankings, tracks, raw_tracks, latest_timestamp, boats_json = load_all_data()
 
 if df_rankings.empty:
     st.error("No data found")
@@ -251,8 +250,7 @@ with tab3:
     # Rankings over time (from history)
     st.subheader("Rank History")
     
-    # Load history data
-    boats_json = load_json(f"{DATA_DIR}/boats.json")
+    # Use cached boats_json from load_all_data
     history = boats_json.get("reports", {}).get("history", [])
     
     if history and len(history) > 1:
