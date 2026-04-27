@@ -49,9 +49,9 @@ def load_all_data():
     history = boats_json.get("reports", {}).get("history", [])
     latest_timestamp = history[-1].get("date") if history else None
     
-    return df_rankings, tracks, raw_tracks, latest_timestamp, history
+    return df_rankings, tracks, raw_tracks, latest_timestamp, boats_json
 
-df_rankings, tracks, raw_tracks, latest_timestamp, boats_json = load_all_data()
+df_rankings, tracks, raw_tracks, latest_timestamp, boats_json_history = load_all_data()
 
 if df_rankings.empty:
     st.error("No data found")
@@ -250,8 +250,8 @@ with tab3:
     # Rankings over time (from history)
     st.subheader("Rank History")
     
-    # Use cached boats_json from load_all_data
-    history = boats_json.get("reports", {}).get("history", [])
+    # Use cached history from load_all_data
+    history = boats_json_history.get("reports", {}).get("history", [])
     
     if history and len(history) > 1:
         # Parse history into time series
