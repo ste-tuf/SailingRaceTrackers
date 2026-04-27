@@ -131,6 +131,7 @@ with tab1:
     st.dataframe(
         display_df[["Rank", "boatName", "Class", "Class Rank", "Boat Class", "DTF", "DTL"]],
         width='stretch',
+        height=600,
         hide_index=True
     )
     
