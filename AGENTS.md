@@ -2,27 +2,31 @@
 
 ## Quick Start
 ```bash
-npm install
-node download-reports.js
-node generate-result.js
+uv sync
+streamlit run app.py
 ```
 
 ## Key Commands
-- `npm install` - Install Node.js dependencies (axios, jsdom)
-- `node download-reports.js` - Fetch data from Geovoile (requires internet)
-- `node generate-result.js` - Process data into `boats_result.json`
+- `uv sync` - Install Python dependencies
+- `streamlit run app.py` - Launch the Streamlit web application
+- `python python/extract_current_rankings.py` - Extract rankings to JSON
 
 ## Project Structure
-- `download-reports.js` - Fetches and decodes binary `.hwx` files from Geovoile
-- `generate-result.js` - Converts raw data to structured JSON with tracks
-- `config.json` - Race configuration (route, boats, classes)
-- `boats.json` / `tracks.json` / `boats_result.json` - Generated data files
-- `qmd/*.qmd` - Quarto reports for generating race analysis
+- `app.py` - Streamlit web application (main entry point)
+- `python/` - Python package modules
+- `data/` - Data directory (boats.json, tracks.json, boats_result.json)
+- `pyproject.toml` - Python project configuration
+
+## Python Modules
+- `python/extract_current_rankings.py` - Current rankings extraction
+- `python/sample_tracks_by_time.py` - Track sampling and stats
+- `python/process_and_archive.py` - Data archiving
+- `python/utils.py` - Shared utilities
 
 ## Important Notes
 - Each race has its own branch (`prod-*`). The active branch appears in `.github/workflows/generate-boats-result-template.yml`
-- The GitHub workflow auto-updates data: `npm ci` → `node download-reports.js` → `node generate-result.js`
-- Known issue: `generate-result.js` uses a hardcoded array index (31) for GPS track data that may vary per race - see README line 431
+- The web app is served via Streamlit
+- Data is loaded from `data/` directory
 
 ## Generated Output Format (boats_result.json)
 ```json
@@ -38,7 +42,9 @@ node generate-result.js
 }
 ```
 
-## Report Generation
-- Run Quarto to generate reports: `quarto render qmd/race_report.qmd`
-- Computation times are tracked in `computation_times.txt`
-- Report sections: Current status/ranking, time trends (since last computation, last 4h, last 24h)
+## Dependencies
+- `streamlit` - Web application framework
+- `pandas`, `numpy` - Data processing
+- `plotly` - Visualization
+- `gpxpy` - GPX handling
+- `pyproj` - Geodetic calculations

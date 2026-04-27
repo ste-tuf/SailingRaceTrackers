@@ -1,13 +1,13 @@
 # SailingRaceTrackers - Extraction et traitement de données du tracker Geovoile
 
-[![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)](https://github.com/sebfournier95/SailingRaceTrackers/tree/v2.0.1)
-![Mise à jour](https://img.shields.io/badge/dernière%20mise%20à%20jour-Novembre%202025-green.svg)
+[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/sebfournier95/SailingRaceTrackers/tree/v3.0.0)
+![Mise à jour](https://img.shields.io/badge/dernière%20mise%20à%20jour-Avril%202026-green.svg)
 ![Statut](https://img.shields.io/badge/statut-production-brightgreen.svg)
 [![Licence](https://img.shields.io/badge/licence-LGPL_v3-blue.svg)](/LICENCE)
 
 ## 📋 Description
 
-**SailingRaceTrackers** est un système automatisé Node.js spécialisé dans l'extraction et le traitement de données de trackers GPS depuis la plateforme **Geovoile** pour les courses nautiques. Ce système permet de récupérer, décoder et analyser des trajectoires de bateaux en temps réel depuis le système cartographie Geovoile utilisé par les plus grandes courses océaniques, avec **mise à jour automatique via GitHub Actions**.
+**SailingRaceTrackers** est un système automatisé basé sur **Python** avec **Streamlit** pour la visualisation et le traitement de données de trackers GPS depuis la plateforme **Geovoile** pour les courses nautiques. Ce système permet de récupérer, décoder et analyser des trajectoires de bateaux en temps réel depuis le système cartographie Geovoile utilisé par les plus grandes courses océaniques, avec **mise à jour automatique via GitHub Actions**.
 
 Le système s'articule autour de quatre piliers principaux :
 
@@ -18,7 +18,7 @@ Le système s'articule autour de quatre piliers principaux :
 
 ### Particularité technique
 
-SailingRaceTrackers implémente le **décodage propriétaire** des données Geovoile (format binaire compressé), permettant l'extraction des positions GPS encodées par le système de tracking. Cette implémentation reverse-engineered garantit la compatibilité avec les flux de données officiels des courses et supporte **l'automatisation complète via CI/CD**.
+SailingRaceTrackers utilise une **interface Streamlit** pour la visualisation interactive des données de course, avec un backend Python pour le traitement et l'analyse des données Geovoile. Le système est conçu pour être exécuter localement ou déployé sur un serveur.
 
 ---
 
@@ -74,6 +74,26 @@ SailingRaceTrackers implémente le **décodage propriétaire** des données Geov
 
 ```
 SailingRaceTrackers/
+├── app.py                          # Application Streamlit (interface web)
+├── python/                        # Package Python
+│   ├── __init__.py               # Exports des modules
+│   ├── extract_current_rankings.py # Extraction des classements
+│   ├── sample_tracks_by_time.py   # Échantillonnage des trajectoires
+│   ├── process_and_archive.py    # Archivage des données
+│   └── utils.py                  # Utilitaires partagés
+├── data/                         # Données de la course
+│   ├── boats.json                # Données brutes des bateaux
+│   ├── tracks.json              # Données des trajectoires
+│   ├── boats_result.json        # Résultats traités finaux
+│   ├── config.json             # Configuration de la course
+│   └── processed/              # Archives traitées
+├── pyproject.toml               # Configuration Python (dépendances)
+├── uv.lock                    # Lock file uv
+├── .streamlit/                # Configuration Streamlit
+│   └── config.toml
+└── README.md                 # Documentation
+```
+SailingRaceTrackers/
 ├── download-reports.js         # Script de téléchargement des données Geovoile
 ├── generate-result.js          # Script de génération des résultats traités
 ├── boats.json                  # Données brutes des bateaux (auto-généré)
@@ -126,12 +146,12 @@ master                           # Documentation et templates
 
 ### Prérequis
 
+### Prérequis
+
 #### Prérequis système
 
-- **Node.js 18+** - Pour l'exécution des scripts de téléchargement
-- **npm** - Gestionnaire de paquets Node.js
-- **Python 3.10+** - Pour les notebooks d'analyse (optionnel)
-- **uv** - Gestionnaire de paquets Python moderne (recommandé pour Python) ou **pip** classique
+- **Python 3.13+** - Pour l'exécution de l'application Streamlit
+- **uv** - Gestionnaire de packages Python moderne (recommandé)
 - **Accès Internet** - Pour la récupération des données en temps réel
 
 ### Installation
@@ -143,129 +163,50 @@ git clone https://github.com/votre-username/SailingRaceTrackers.git
 cd SailingRaceTrackers
 ```
 
-#### 2. Installer les dépendances Node.js
+#### 2. Installer les dépendances Python avec uv
 
 ```bash
-npm install
-```
-
-Les dépendances suivantes seront installées :
-- [`axios`](package.json:3) - Client HTTP pour les requêtes vers Geovoile
-- [`jsdom`](package.json:4) - Parsing HTML/XML pour les données de configuration
-
-#### 3. (Optionnel) Installer l'environnement Python
-
-Si vous souhaitez utiliser les notebooks Jupyter pour l'analyse, nous recommandons **uv**, un gestionnaire de paquets Python moderne et performant.
-
-##### Installation de uv
-
-```bash
-# Windows (PowerShell)
-powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-
-# Linux/macOS
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Ou via pip
-pip install uv
-```
-
-##### Configuration de l'environnement
-
-```bash
-# Initialiser l'environnement avec uv
-uv venv
-
-# Activer l'environnement
-# Windows
-.venv\Scripts\activate
-# Linux/macOS
-source .venv/bin/activate
-
-# Installer les dépendances avec uv (beaucoup plus rapide que pip)
-uv pip install pandas numpy gpxpy pyproj jupyterlab xmltodict lxml
+# Installer uv si nécessaire (voir ci-dessous)
+#Installer les dépendances
+uv sync
 ```
 
 ### Utilisation
 
-#### Mode 1 : Utilisation automatisée (recommandé)
+#### Mode 1 : Utilisation de l'application Streamlit (recommandé)
 
-**Le système est entièrement automatisé via GitHub Actions.** Une fois configuré, les données sont mises à jour automatiquement selon la fréquence définie dans le workflow.
-
-##### Consulter les données automatiquement générées
+**Lancer l'application web :**
 
 ```bash
-# Basculer vers la branche de production de la course souhaitée
-git checkout prod-minitransat-2025
+# Activer l'environnement (si nécessaire)
+source .venv/bin/activate
 
-# Récupérer les dernières données
-git pull origin prod-minitransat-2025
-
-# Les fichiers sont automatiquement à jour :
-# - boats.json : données brutes des bateaux
-# - tracks.json : trajectoires brutes
-# - boats_result.json : données traitées et enrichies
+# Lancer l'application Streamlit
+streamlit run app.py
 ```
 
-**Avantages du mode automatisé :**
-- ✅ Mise à jour automatique périodique sans intervention
-- ✅ Historique complet dans les commits Git
-- ✅ Données toujours disponibles et à jour
-- ✅ Pas besoin d'exécuter les scripts manuellement
-- ✅ Fonctionne 24/7, même ordinateur éteint
+L'application Streamlit offre une interface interactive avec :
+- **Classements en temps réel** : Tableau de bord des positions actuel
+- **Visualisation des trajectoires** : Cartes interactives des parcours GPS
+- **Analyse de course** : Graphiques d'évolution des performances
+- **Archivage** : Traitement et generation d'archives
 
-##### Comprendre l'automatisation GitHub Actions
+L'application est accessible à l'adresse `http://localhost:8501` par défaut.
 
-Le workflow automatique (voir [`.github/workflows/generate-boats-result-template.yml`](.github/workflows/generate-boats-result-template.yml)) :
+#### Mode 2 : Utilisation en ligne de commande
 
-1. **Déclenchement** : Selon la fréquence définie dans le CRON (ex: `0 */1 * * *` pour toutes les heures) et à chaque push sur la branche
-2. **Téléchargement** : Exécute [`download-reports.js`](download-reports.js) pour récupérer les données Geovoile
-3. **Traitement** : Exécute [`generate-result.js`](generate-result.js) pour calculer les résultats
-4. **Versioning** : Commit automatique des fichiers JSON avec horodatage
-5. **Accessibilité** : Les données sont immédiatement disponibles via `git pull`
-
-**Consulter l'historique des mises à jour :**
-```bash
-# Voir les 10 derniers commits (mises à jour)
-git log --oneline -10
-
-# Voir les changements entre deux instants
-git diff HEAD~5 HEAD boats_result.json
-```
-
-#### Mode 2 : Exécution manuelle locale
-
-Si vous souhaitez exécuter les scripts localement (développement, tests, ou utilisation hors GitHub) :
-
-##### Téléchargement et génération des données
+Pour les opérations de traitement de données en lot :
 
 ```bash
-# Basculer vers la branche de production
-git checkout prod-minitransat-2025
+# Extraire les classements actuels
+python -c "from python import CurrentRankings; r = CurrentRankings(); print(r.load('data/boats.json'))"
 
-# Télécharger les données depuis Geovoile
-node download-reports.js
+# Échantillonner les trajectoires
+python -c "from python import TrackSampler; s = TrackSampler(); print(s.sample_all_tracks())"
 
-# Générer les résultats traités
-node generate-result.js
-
-# Les fichiers générés :
-# - boats.json : données brutes téléchargées
-# - tracks.json : trajectoires brutes
-# - boats_result.json : résultats traités et enrichis
+# Créer une archive
+python -c "from python import ProcessAndArchive; p = ProcessAndArchive(); p.run('data/config.json', 'data/boats.json', 'data/tracks.json', 'data/processed')"
 ```
-
-Le script [`download-reports.js`](download-reports.js) :
-- Se connecte au serveur Geovoile configuré (ligne 73: `geovoileHostname`)
-- Récupère les données binaires compressées (format `.hwx`)
-- Applique le décodeur propriétaire ([`UInt8Array`](download-reports.js:34))
-- Sauvegarde les fichiers [`boats.json`](download-reports.js:133) et [`tracks.json`](download-reports.js:142)
-
-Le script [`generate-result.js`](generate-result.js) :
-- Charge les données brutes depuis [`boats.json`](generate-result.js:4) et [`tracks.json`](generate-result.js:5)
-- Reconstruit les trajectoires complètes à partir des deltas cumulatifs
-- Calcule les statistiques de course (cap, vitesse, distances, DTF, DTL, DTP)
-- Exporte vers [`boats_result.json`](generate-result.js:122)
 
 ##### Courses disponibles
 
