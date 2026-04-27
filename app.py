@@ -10,7 +10,11 @@ import plotly.express as px
 import plotly.graph_objects as go
 import glob
 import os
+import io
+import zipfile
 from datetime import datetime
+import gpxpy
+import gpxpy.gpx
 
 from python import CurrentRankings, TrackSampler, ProcessAndArchive, load_json
 from python import compute_all_sailing_stats, get_precomputed_sailing_stats
@@ -81,7 +85,7 @@ if show_target_only:
     df_filtered = df_filtered[df_filtered["boatName"].str.contains(target_val, case=False, na=False)]
 
 # Tab layout
-tab1, tab2, tab3 = st.tabs(["🏆 Rankings", "🗺️ Tracks", "📊 Analysis"])
+tab1, tab2, tab3, tab4 = st.tabs(["🏆 Rankings", "🗺️ Tracks", "📊 Analysis", "📥 Export"])
 
 with tab1:
     st.subheader("Current Rankings")
@@ -303,6 +307,132 @@ with tab3:
         archives = sorted(glob.glob(f"{DATA_DIR}/processed/*.json"), reverse=True)
         if archives:
             st.caption(f"Latest: {os.path.basename(archives[0])}")
+
+with tab4:
+    def create_gpx_for_class(boats_df, tracks_dict):
+        """Create a combined GPX for all boats in the dataframe - simple version with just positions."""
+        gpx = gpxpy.gpx.GPX()
+        gpx.name = "Race Tracks"
+        
+        for _, boat in boats_df.iterrows():
+            boat_id = str(boat["boat"])
+            track = tracks_dict.get(boat_id, [])
+            if track:
+                gpx_track = gpxpy.gpx.GPXTrack()
+                gpx_track.name = f"{boat['boatName']}"
+                gpx.tracks.append(gpx_track)
+                
+                gpx_segment = gpxpy.gpx.GPXTrackSegment()
+                gpx_track.segments.append(gpx_segment)
+                
+                for point in track:
+                    lat, lon = point[0], point[1]
+                    gpx_point = gpxpy.gpx.GPXTrackPoint(lat, lon)
+                    gpx_segment.points.append(gpx_point)
+        
+        return gpx
+    
+    st.subheader("Export for Navigation Software")
+    
+    st.markdown("""
+    Export boat tracks in GPX format (positions only) compatible with **NavimetriX**, **QTVLM**.
+    """)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("Export Duo Boats (GPX)", use_container_width=True):
+            try:
+                duo_boats = df_filtered[df_filtered["classType"] == "Duo"]
+                gpx = create_gpx_for_class(duo_boats, tracks)
+                
+                gpx_data = io.BytesIO()
+                gpx_data.write(gpx.to_xml().encode('utf-8'))
+                gpx_data.seek(0)
+                
+                st.download_button(
+                    label="Download Duo Boats GPX",
+                    data=gpx_data.getvalue(),
+                    file_name=f"duo_boats_{datetime.now().strftime('%Y%m%d_%H%M')}.gpx",
+                    mime="application/gpx+xml"
+                )
+                st.success(f"Exported {len(duo_boats)} Duo boats")
+            except Exception as e:
+                st.error(f"Error: {e}")
+    
+    with col2:
+        if st.button("Export Solo Boats (GPX)", use_container_width=True):
+            try:
+                solo_boats = df_filtered[df_filtered["classType"] == "Solo"]
+                gpx = create_gpx_for_class(solo_boats, tracks)
+                
+                gpx_data = io.BytesIO()
+                gpx_data.write(gpx.to_xml().encode('utf-8'))
+                gpx_data.seek(0)
+                
+                st.download_button(
+                    label="Download Solo Boats GPX",
+                    data=gpx_data.getvalue(),
+                    file_name=f"solo_boats_{datetime.now().strftime('%Y%m%d_%H%M')}.gpx",
+                    mime="application/gpx+xml"
+                )
+                st.success(f"Exported {len(solo_boats)} Solo boats")
+            except Exception as e:
+                st.error(f"Error: {e}")
+    
+    st.markdown("---")
+    
+    st.subheader("Distance to Waypoint")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        wp_lat = st.number_input("Waypoint Latitude", value=0.0, format="%.5f")
+    with col2:
+        wp_lon = st.number_input("Waypoint Longitude", value=0.0, format="%.5f")
+    
+    from pyproj import Geod, CRS
+    crs = CRS.from_epsg(4326)
+    geod = crs.get_geod()
+    
+    summary_data = []
+    for _, boat in df_filtered.iterrows():
+        boat_id = str(boat["boat"])
+        track = tracks.get(boat_id, [])
+        
+        if track:
+            last_point = track[-1]
+            lat, lon = last_point[0], last_point[1]
+            
+            azi, azi2, dist = geod.inv(lon, lat, wp_lon, wp_lat)
+            dist_nm = abs(dist) / 1852.0
+            
+            summary_data.append({
+                "Rank": boat["overallRank"],
+                "Class": boat["classType"],
+                "Name": boat["boatName"],
+                "Sail": boat["boat"],
+                "DTF": boat["dtf"],
+                "DTL": boat["dtl"],
+                "Speed": boat["speed"],
+                "Lat": f"{lat:.5f}",
+                "Lon": f"{lon:.5f}",
+                "Dist to WP": dist_nm,
+            })
+    
+    summary_df = pd.DataFrame(summary_data)
+    summary_df = summary_df.sort_values("Rank")
+    
+    st.dataframe(
+        summary_df,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Dist to WP": st.column_config.NumberColumn(
+                "Dist to WP (nm)",
+                format="%.1f nm"
+            )
+        }
+    )
 
 # Footer
 st.sidebar.markdown("---")
