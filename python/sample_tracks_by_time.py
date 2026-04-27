@@ -20,75 +20,6 @@ from .utils import (
 )
 
 
-def get_precomputed_sailing_stats(boats_json_path: str) -> dict:
-    """
-    Get pre-computed sailing stats from boats.json history.
-    
-    Column indices (from README):
-    [7] = heading (course), [8] = speed_knots, [9] = vmg_knots
-    [11] = heading4h, [12] = dist4h_nm, [13] = vmg4h, [14] = dog4h
-    [15] = heading24h, [16] = dist24h_nm, [17] = maxdist24h, [18] = vmg24h, [19] = dog24h
-    
-    Args:
-        boats_json_path: Path to boats.json
-        
-    Returns:
-        Dict of {boat_id: {hours: {speed, vmg, heading, distance}}}
-    """
-    boats_json = load_json(boats_json_path)
-    history = boats_json.get("reports", {}).get("history", [])
-    if not history:
-        return {}
-    
-    latest = history[-1]
-    
-    result = {}
-    for line in latest.get("lines", []):
-        try:
-            boat_id = str(line[BOAT_COLUMNS["boat"]])
-            racestatus = line[BOAT_COLUMNS["racestatus"]]
-            if racestatus != "RAC":
-                continue
-            
-            # Current values
-            result[boat_id] = {
-                1: {
-                    "speed": line[8],
-                    "vmg": line[9],
-                    "heading": line[7],
-                    "distance": None,
-                },
-                4: {
-                    "speed": round(line[12] / 4.0, 1) if line[12] else None,
-                    "vmg": line[13],
-                    "heading": line[11],
-                    "distance": line[12],
-                },
-                12: {
-                    "speed": round(line[16] / 12.0, 1) if line[16] else None,
-                    "vmg": None,
-                    "heading": None,
-                    "distance": None,
-                },
-                24: {
-                    "speed": round(line[16] / 24.0, 1) if line[16] else None,
-                    "vmg": line[18],
-                    "heading": line[15],
-                    "distance": line[16],
-                },
-                48: {
-                    "speed": round(line[16] / 24.0, 1) * 2 if line[16] else None,
-                    "vmg": None,
-                    "heading": None,
-                    "distance": None,
-                },
-            }
-        except (IndexError, TypeError):
-            continue
-    
-    return result
-
-
 def parse_timestamp(ts_str: str) -> datetime:
     """
     Parse ISO timestamp string to datetime.
@@ -321,34 +252,6 @@ def load_tracks_from_result(path: str) -> dict[str, list]:
             tracks[boat_id] = track
     
     return tracks
-
-
-def filter_by_class(
-    data: dict,
-    patterns: list[str] | None = None,
-    boat_class_key: str = 'boatClass'
-) -> dict:
-    """
-    Filter boats by class using regex patterns.
-    
-    Args:
-        data: Dict of boat data with 'boatClass' field
-        patterns: List of regex patterns (default: ['(?i)figaro'])
-        boat_class_key: Key containing boat class
-        
-    Returns:
-        Filtered dict with only matching boats
-    """
-    if patterns is None:
-        patterns = [r'(?i)figaro']
-    
-    result = {}
-    for boat_id, boat_data in data.items():
-        boat_class = str(boat_data.get(boat_class_key, ''))
-        if detect_figaro_class(boat_class, patterns=patterns):
-            result[boat_id] = boat_data
-    
-    return result
 
 
 class TrackSampler:
