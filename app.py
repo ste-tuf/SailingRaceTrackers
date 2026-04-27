@@ -130,7 +130,7 @@ with tab1:
     # Show table
     st.dataframe(
         display_df[["Rank", "boatName", "Class", "Class Rank", "Boat Class", "DTF", "DTL"]],
-        use_container_width=True,
+        width='stretch',
         hide_index=True
     )
     
@@ -177,7 +177,7 @@ with tab1:
             subset=all_numeric_cols,
             vmin=0
         ),
-        use_container_width=True,
+        width='stretch',
         hide_index=True
     )
 
@@ -228,7 +228,7 @@ with tab2:
             legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01)
         )
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
     else:
         st.info("Select boats to display tracks")
 
@@ -245,7 +245,7 @@ with tab3:
         size="rank",
         title="Speed vs Distance to Finish"
     )
-    st.plotly_chart(fig_scatter, use_container_width=True)
+    st.plotly_chart(fig_scatter, width='stretch')
     
     # Rankings over time (from history)
     st.subheader("Rank History")
@@ -279,11 +279,11 @@ with tab3:
             # Rank over time
             fig_rank = px.line(hist_df, x="time", y="rank", markers=True, title=f"{target_boat} Rank Over Time")
             fig_rank.update_yaxes(autorange="reversed")
-            st.plotly_chart(fig_rank, use_container_width=True)
+            st.plotly_chart(fig_rank, width='stretch')
             
             # DTF over time
             fig_dtf = px.line(hist_df, x="time", y="dtf", markers=True, title=f"{target_boat} Distance to Finish Over Time")
-            st.plotly_chart(fig_dtf, use_container_width=True)
+            st.plotly_chart(fig_dtf, width='stretch')
     else:
         st.info("No historical data available")
     
@@ -320,7 +320,7 @@ with tab4:
     col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("Export Duo Boats (GPX)", use_container_width=True):
+        if st.button("Export Duo Boats (GPX)", width='stretch'):
             try:
                 duo_boats = df_filtered[df_filtered["classType"] == "Duo"]
                 gpx = create_gpx_with_metadata(duo_boats, tracks)
@@ -340,7 +340,7 @@ with tab4:
                 st.error(f"Error: {e}")
     
     with col2:
-        if st.button("Export Solo Boats (GPX)", use_container_width=True):
+        if st.button("Export Solo Boats (GPX)", width='stretch'):
             try:
                 solo_boats = df_filtered[df_filtered["classType"] == "Solo"]
                 gpx = create_gpx_with_metadata(solo_boats, tracks)
@@ -399,7 +399,7 @@ with tab4:
     
     st.dataframe(
         summary_df,
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
         column_config={
             "Dist to WP": st.column_config.NumberColumn(
