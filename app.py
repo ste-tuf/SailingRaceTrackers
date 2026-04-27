@@ -13,12 +13,16 @@ import os
 import io
 import zipfile
 from datetime import datetime
-import gpxpy
-import gpxpy.gpx
 
 from python import CurrentRankings, TrackSampler, ProcessAndArchive, load_json
 from python import compute_all_sailing_stats, get_precomputed_sailing_stats
+from python import create_gpx_with_metadata, gpx_to_bytes
 from python.utils import BOAT_COLUMNS
+from pyproj import CRS
+
+# Create Geod once at module level
+_CRS = CRS.from_epsg(4326)
+_GEOD = _CRS.get_geod()
 
 
 st.set_page_config(page_title="Sailing Race Tracker", layout="wide")
@@ -309,29 +313,6 @@ with tab3:
             st.caption(f"Latest: {os.path.basename(archives[0])}")
 
 with tab4:
-    def create_gpx_for_class(boats_df, tracks_dict):
-        """Create a combined GPX for all boats in the dataframe - simple version with just positions."""
-        gpx = gpxpy.gpx.GPX()
-        gpx.name = "Race Tracks"
-        
-        for _, boat in boats_df.iterrows():
-            boat_id = str(boat["boat"])
-            track = tracks_dict.get(boat_id, [])
-            if track:
-                gpx_track = gpxpy.gpx.GPXTrack()
-                gpx_track.name = f"{boat['boatName']}"
-                gpx.tracks.append(gpx_track)
-                
-                gpx_segment = gpxpy.gpx.GPXTrackSegment()
-                gpx_track.segments.append(gpx_segment)
-                
-                for point in track:
-                    lat, lon = point[0], point[1]
-                    gpx_point = gpxpy.gpx.GPXTrackPoint(lat, lon)
-                    gpx_segment.points.append(gpx_point)
-        
-        return gpx
-    
     st.subheader("Export for Navigation Software")
     
     st.markdown("""
@@ -344,10 +325,10 @@ with tab4:
         if st.button("Export Duo Boats (GPX)", use_container_width=True):
             try:
                 duo_boats = df_filtered[df_filtered["classType"] == "Duo"]
-                gpx = create_gpx_for_class(duo_boats, tracks)
+                gpx = create_gpx_with_metadata(duo_boats, tracks)
                 
                 gpx_data = io.BytesIO()
-                gpx_data.write(gpx.to_xml().encode('utf-8'))
+                gpx_data.write(gpx_to_bytes(gpx))
                 gpx_data.seek(0)
                 
                 st.download_button(
@@ -364,10 +345,10 @@ with tab4:
         if st.button("Export Solo Boats (GPX)", use_container_width=True):
             try:
                 solo_boats = df_filtered[df_filtered["classType"] == "Solo"]
-                gpx = create_gpx_for_class(solo_boats, tracks)
+                gpx = create_gpx_with_metadata(solo_boats, tracks)
                 
                 gpx_data = io.BytesIO()
-                gpx_data.write(gpx.to_xml().encode('utf-8'))
+                gpx_data.write(gpx_to_bytes(gpx))
                 gpx_data.seek(0)
                 
                 st.download_button(
@@ -390,10 +371,6 @@ with tab4:
     with col2:
         wp_lon = st.number_input("Waypoint Longitude", value=0.0, format="%.5f")
     
-    from pyproj import Geod, CRS
-    crs = CRS.from_epsg(4326)
-    geod = crs.get_geod()
-    
     summary_data = []
     for _, boat in df_filtered.iterrows():
         boat_id = str(boat["boat"])
@@ -403,7 +380,7 @@ with tab4:
             last_point = track[-1]
             lat, lon = last_point[0], last_point[1]
             
-            azi, azi2, dist = geod.inv(lon, lat, wp_lon, wp_lat)
+            azi, azi2, dist = _GEOD.inv(lon, lat, wp_lon, wp_lat)
             dist_nm = abs(dist) / 1852.0
             
             summary_data.append({

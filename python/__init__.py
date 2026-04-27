@@ -8,6 +8,7 @@ Modules:
 - extract_current_rankings: Extract and filter current rankings
 - sample_tracks_by_time: Sample GPS tracks over time intervals
 - utils: Shared utilities for XML/JSON handling
+- gpx_utils: GPX export utilities
 """
 
 from .process_and_archive import ProcessAndArchive, process_and_archive
@@ -25,6 +26,12 @@ from .utils import (
     load_xml_config,
     save_json,
     BOAT_COLUMNS,
+)
+from .gpx_utils import (
+    create_gpx_track,
+    create_combined_gpx,
+    create_gpx_with_metadata,
+    gpx_to_bytes,
 )
 
 __all__ = [
@@ -46,4 +53,9 @@ __all__ = [
     'load_xml_config',
     'save_json',
     'BOAT_COLUMNS',
+    # GPX utils
+    'create_gpx_track',
+    'create_combined_gpx',
+    'create_gpx_with_metadata',
+    'gpx_to_bytes',
 ]
