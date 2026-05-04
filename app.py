@@ -44,16 +44,16 @@ def load_all_data():
         for bid, data in raw_results.get("result", {}).items()
     }
 
-    boats_json_raw = load_json(f"{DATA_DIR}/boats.json")
-    latest_history = boats_json_raw.get("reports", {}).get("history", [])
+    boats_json = load_json(f"{DATA_DIR}/boats.json")
+    latest_history = boats_json.get("reports", {}).get("history", [])
     latest_timestamp = latest_history[-1].get("date") if latest_history else None
 
     reports_df = reports_to_dataframe(f"{DATA_DIR}/reports.json")
 
-    return data_latest, tracks, latest_timestamp, boats_json_raw, reports_df
+    return data_latest, tracks, latest_timestamp, boats_json, reports_df
 
 
-data_latest, tracks, latest_timestamp, boats_json_history, reports_df = load_all_data()
+data_latest, tracks, latest_timestamp, boats_json, reports_df = load_all_data()
 
 if data_latest.empty:
     st.error("No data found")
@@ -73,11 +73,11 @@ else:
 
 st.sidebar.markdown(f"**📅 Last Update:** {formatted_date}")
 
-race_state = boats_json_history.get("reports", {}).get("state", "UNKNOWN")
+race_state = boats_json.get("reports", {}).get("state", "UNKNOWN")
 state_emoji = {"RUNNING": "🟢", "FINISHED": "🏁", "PAUSED": "⏸️"}.get(race_state, "⚪")
 st.sidebar.markdown(f"**🏃 Race Status:** {state_emoji} {race_state}")
 
-history = boats_json_history.get("reports", {}).get("history", [])
+history = boats_json.get("reports", {}).get("history", [])
 if history:
     lines = history[-1].get("lines", [])
     status_counts = {}
@@ -303,7 +303,7 @@ with tab3:
     st.subheader("Rank History")
 
     # Use cached history from load_all_data
-    history = boats_json_history.get("reports", {}).get("history", [])
+    history = boats_json.get("reports", {}).get("history", [])
 
     if history and len(history) > 1:
         # Parse history into time series
