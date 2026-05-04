@@ -85,7 +85,11 @@ def extract_current_rankings(
             'skipperNames': binfo.get('skipperNames', '')
         })
     
-    return pd.DataFrame(records)
+    history = boats_json.get('reports', {}).get('history', [])
+    latest_timestamp = history[-1].get('date') if history else None
+    race_state = boats_json.get('reports', {}).get('state', 'UNKNOWN')
+    
+    return pd.DataFrame(records), race_state, latest_timestamp
 
 
 def filter_by_class(
@@ -153,7 +157,7 @@ class CurrentRankings:
         self,
         boats_json_path: str | dict = "data/boats.json",
         boatinfo_path: str | None = None
-    ) -> pd.DataFrame:
+    ) -> tuple[pd.DataFrame, str, str | None]:
         """
         Load current rankings.
 
@@ -162,7 +166,7 @@ class CurrentRankings:
             boatinfo_path: Optional path to boatinfo.json
 
         Returns:
-            DataFrame with current rankings
+            Tuple of (DataFrame, race state, latest timestamp)
         """
         return extract_current_rankings(boats_json_path, boatinfo_path)
     

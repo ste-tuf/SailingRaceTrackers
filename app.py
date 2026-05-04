@@ -36,12 +36,9 @@ DATA_DIR = "data"
 @st.cache_data
 def load_all_data():
     """Load all data sources and merge them."""
-    boats_json = load_json(f"{DATA_DIR}/boats.json")
-
-    latest_history = boats_json.get("reports", {}).get("history", [])
-    latest_timestamp = latest_history[-1].get("date") if latest_history else None
-
-    data_latest = CurrentRankings().load(boats_json)
+    data_latest, race_state, latest_timestamp = CurrentRankings().load(
+        f"{DATA_DIR}/boats.json"
+    )
 
     raw_results = load_json(f"{DATA_DIR}/boats_result.json")
     tracks = {
@@ -51,10 +48,10 @@ def load_all_data():
 
     reports_df = reports_to_dataframe(f"{DATA_DIR}/reports.json")
 
-    return data_latest, tracks, latest_timestamp, boats_json, reports_df
+    return data_latest, tracks, latest_timestamp, race_state, reports_df
 
 
-data_latest, tracks, latest_timestamp, boats_json, reports_df = load_all_data()
+data_latest, tracks, latest_timestamp, race_state, reports_df = load_all_data()
 
 if data_latest.empty:
     st.error("No data found")
@@ -74,26 +71,11 @@ else:
 
 st.sidebar.markdown(f"**📅 Last Update:** {formatted_date}")
 
-race_state = boats_json.get("reports", {}).get("state", "UNKNOWN")
 state_emoji = {"RUNNING": "🟢", "FINISHED": "🏁", "PAUSED": "⏸️"}.get(race_state, "⚪")
 st.sidebar.markdown(f"**🏃 Race Status:** {state_emoji} {race_state}")
 
-history = boats_json.get("reports", {}).get("history", [])
-if history:
-    lines = history[-1].get("lines", [])
-    status_counts = {}
-    for line in lines:
-        status = line[BOAT_COLUMNS["racestatus"]]
-        status_counts[status] = status_counts.get(status, 0) + 1
-
-    rac_count = status_counts.get("RAC", 0)
-    dnf_count = status_counts.get("DNF", 0)
-    ret_count = status_counts.get("RET", 0)
-    sta_count = status_counts.get("STA", 0)
-
-    st.sidebar.markdown(
-        f"**🚤 Boats:** 🟢 RAC: {rac_count} | 🔴 DNF: {dnf_count} | 🟠 RET: {ret_count} | ⚪ STA: {sta_count}"
-    )
+rac_count = len(data_latest)
+st.sidebar.markdown(f"**🚤 Boats:** 🟢 RAC: {rac_count}")
 
 st.sidebar.markdown("---")
 
@@ -300,46 +282,26 @@ with tab3:
     )
     st.plotly_chart(fig_scatter, width="stretch")
 
-    # Rankings over time (from history)
+    # Rankings over time
     st.subheader("Rank History")
 
-    # Use cached history from load_all_data
-    history = boats_json.get("reports", {}).get("history", [])
+    if not reports_df.empty:
+        target_id = str(
+            data_latest[
+                data_latest["boatName"].str.contains(target_boat, case=False, na=False)
+            ]["boat"].iloc[0]
+        )
 
-    if history and len(history) > 1:
-        # Parse history into time series
-        target_id = data_latest[
-            data_latest["boatName"].str.contains(target_boat, case=False, na=False)
-        ]["boat"].iloc[0]
+        target_history = reports_df[
+            (reports_df["boat"] == target_id) & (reports_df["racestatus"] == "RAC")
+        ].copy()
 
-        history_data = []
-        for entry in history:
-            entry_date = entry.get("date", "")
-            lines = entry.get("lines", [])
-            for line in lines:
-                if (
-                    line[BOAT_COLUMNS["racestatus"]] == "RAC"
-                    and int(line[BOAT_COLUMNS["boat"]]) == target_id
-                ):
-                    history_data.append(
-                        {
-                            "time": entry_date,
-                            "rank": line[BOAT_COLUMNS["rank"]],
-                            "speed": line[BOAT_COLUMNS["speed"]],
-                            "dtf": line[BOAT_COLUMNS["dtf"]],
-                            "dtl": line[BOAT_COLUMNS["dtl"]],
-                        }
-                    )
+        if not target_history.empty:
+            target_history = target_history.sort_values("timestamp")
 
-        if history_data:
-            hist_df = pd.DataFrame(history_data)
-            hist_df["time"] = pd.to_datetime(hist_df["time"])
-            hist_df = hist_df.sort_values("time")
-
-            # Rank over time
             fig_rank = px.line(
-                hist_df,
-                x="time",
+                target_history,
+                x="timestamp",
                 y="rank",
                 markers=True,
                 title=f"{target_boat} Rank Over Time",
@@ -347,10 +309,9 @@ with tab3:
             fig_rank.update_yaxes(autorange="reversed")
             st.plotly_chart(fig_rank, width="stretch")
 
-            # DTF over time
             fig_dtf = px.line(
-                hist_df,
-                x="time",
+                target_history,
+                x="timestamp",
                 y="dtf",
                 markers=True,
                 title=f"{target_boat} Distance to Finish Over Time",
