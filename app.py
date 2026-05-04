@@ -157,13 +157,17 @@ with tab1:
             "boatClass": "Boat Class",
             "dtf": "DTF",
             "dtl": "DTL",
+            "tws": "TWS",
+            "twd": "TWD",
+            "dist4h": "Dist 4h",
+            "dist24h": "Dist 24h",
         }
     )
 
     # Show table
     st.dataframe(
         display_df[
-            ["Rank", "boatName", "Class", "Class Rank", "Boat Class", "DTF", "DTL"]
+            ["Rank", "boatName", "Class", "Class Rank", "Boat Class", "DTF", "DTL", "TWS", "TWD", "Dist 4h", "Dist 24h"]
         ],
         width="stretch",
         height=600,
@@ -173,10 +177,8 @@ with tab1:
     # Sailing stats over time windows
     st.markdown("### Sailing Stats by Time Window")
 
-    # Use pre-computed stats from boats.json history
     precomputed_stats = get_precomputed_sailing_stats(f"{DATA_DIR}/boats.json")
 
-    # Build stats dataframe
     stats_data = []
     for _, boat_row in df_filtered.iterrows():
         boat_id = str(boat_row["boat"])
@@ -184,26 +186,21 @@ with tab1:
 
         stats_row = {"boatName": boat_row["boatName"], "Class": boat_row["classType"]}
 
-        for hours in [1, 4, 12, 24, 48]:
+        for hours in [1, 4, 24]:
             hs = hour_stats.get(hours, {})
             stats_row[f"{hours}h Speed"] = hs.get("speed")
             stats_row[f"{hours}h VMG"] = hs.get("vmg")
-            stats_row[f"{hours}h TWA"] = None  # Not available in pre-computed
 
         stats_data.append(stats_row)
 
     stats_df = pd.DataFrame(stats_data)
 
-    # Format for display
-    speed_cols = [c for c in stats_df.columns if "Speed" in c]
-    vmg_cols = [c for c in stats_df.columns if "VMG" in c]
-    twa_cols = [c for c in stats_df.columns if "TWA" in c]
+    speed_cols = ["1h Speed", "4h Speed", "24h Speed"]
+    vmg_cols = ["1h VMG", "4h VMG", "24h VMG"]
     all_numeric_cols = speed_cols + vmg_cols
 
     format_dict = {col: "{:.1f}" for col in all_numeric_cols}
-    format_dict.update({col: "{:.0f}" for col in twa_cols})
 
-    # Apply color scale
     st.dataframe(
         stats_df.style.format(format_dict, na_rep="-").background_gradient(
             cmap="RdYlGn", subset=all_numeric_cols, vmin=0

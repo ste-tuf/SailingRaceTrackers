@@ -79,6 +79,8 @@ def extract_current_rankings(
             'heading': line[BOAT_COLUMNS['heading']],
             'dist4h': line[BOAT_COLUMNS['dist4h']],
             'dist24h': line[BOAT_COLUMNS['dist24h']],
+            'tws': line[BOAT_COLUMNS['windspeed']],
+            'twd': line[BOAT_COLUMNS['winddir']],
             'boatName': binfo.get('boatName', ''),
             'category': binfo.get('category', ''),
             'boatClass': binfo.get('boatClass', ''),

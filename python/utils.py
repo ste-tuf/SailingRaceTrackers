@@ -148,6 +148,9 @@ BOAT_COLUMNS = {
     'maxdist24h': 17,
     'vmg24h': 18,
     'dog24h': 19,
+    'winddir': 29,
+    'windspeed': 30,
+    'windgust': 31,
 }
 
 
