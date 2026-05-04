@@ -17,7 +17,7 @@ from .utils import (
 
 
 def extract_current_rankings(
-    boats_json_path: str,
+    boats_json_path: str | dict | None = None,
     boatinfo_path: str | None = None
 ) -> pd.DataFrame:
     """
@@ -27,25 +27,26 @@ def extract_current_rankings(
     boat info from config.xml to get boat names and classes.
     
     Args:
-        boats_json_path: Path to boats.json file
+        boats_json_path: Path to boats.json file, or already-loaded dict
         boatinfo_path: Optional path to boatinfo.json (if already generated)
-        
+
     Returns:
         DataFrame with columns: boat, rank, speed, vmg, dtf, dtl, heading,
                boatName, category, boatClass, skipperNames
     """
-    boats_json = load_json(boats_json_path)
+    if isinstance(boats_json_path, dict):
+        boats_json = boats_json_path
+    else:
+        boats_json = load_json(boats_json_path)
     
     # Load boat info
     if boatinfo_path and Path(boatinfo_path).exists():
         boatinfo = load_json(boatinfo_path)
     else:
-        # Try default path
-        default_path = str(Path(boats_json_path).parent / "boatinfo.json")
+        default_path = "data/boatinfo.json"
         if Path(default_path).exists():
             boatinfo = load_json(default_path)
         else:
-            # Build from config - caller should provide config path
             boatinfo = {}
     
     # Get latest history entry
@@ -150,16 +151,16 @@ class CurrentRankings:
     
     def load(
         self,
-        boats_json_path: str = "data/boats.json",
+        boats_json_path: str | dict = "data/boats.json",
         boatinfo_path: str | None = None
     ) -> pd.DataFrame:
         """
         Load current rankings.
-        
+
         Args:
-            boats_json_path: Path to boats.json
+            boats_json_path: Path to boats.json, or already-loaded dict
             boatinfo_path: Optional path to boatinfo.json
-            
+
         Returns:
             DataFrame with current rankings
         """

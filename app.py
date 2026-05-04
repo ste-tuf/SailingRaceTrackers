@@ -36,17 +36,18 @@ DATA_DIR = "data"
 @st.cache_data
 def load_all_data():
     """Load all data sources and merge them."""
-    data_latest = CurrentRankings().load(f"{DATA_DIR}/boats.json")
+    boats_json = load_json(f"{DATA_DIR}/boats.json")
+
+    latest_history = boats_json.get("reports", {}).get("history", [])
+    latest_timestamp = latest_history[-1].get("date") if latest_history else None
+
+    data_latest = CurrentRankings().load(boats_json)
 
     raw_results = load_json(f"{DATA_DIR}/boats_result.json")
     tracks = {
         bid: data.get("track", [])
         for bid, data in raw_results.get("result", {}).items()
     }
-
-    boats_json = load_json(f"{DATA_DIR}/boats.json")
-    latest_history = boats_json.get("reports", {}).get("history", [])
-    latest_timestamp = latest_history[-1].get("date") if latest_history else None
 
     reports_df = reports_to_dataframe(f"{DATA_DIR}/reports.json")
 
