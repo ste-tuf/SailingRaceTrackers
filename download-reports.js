@@ -73,12 +73,24 @@ var UInt8Array = function (input) {
 const geovoileHostname = 'cap-martinique.geovoile.com/';
 const resourcesBasePath = '/2026/resources/versions/';
 const trackerBasePath = '/2026/tracker/resources/';
+const archivesPath = './data/historical/';
+const intervalsHours = 1;
 
 // ================================== UTILS ===================================
 
 function handleError(error) {
 	console.error(error);
 	process.exit(1)
+}
+
+function ensureHistoricalDir() {
+	if (!fs.existsSync(archivesPath)) {
+		fs.mkdirSync(archivesPath, { recursive: true });
+	}
+}
+
+function getHourlyVersion() {
+	return Math.floor(new Date().getTime() / 1000 / 60 / intervalsHours) * 60 * intervalsHours;
 }
 
 function geoVoileGet(path, callback) {
@@ -123,7 +135,44 @@ function downloadReport(path, callback) {
 	})
 }
 
-// =================================== MAIN ===================================
+function shouldSkipDownload(version, type) {
+	const filename = archivesPath + type + '_' + version + '.json';
+	return fs.existsSync(filename);
+}
+
+function downloadToHistorical(version, type, path, callback) {
+	const filename = archivesPath + type + '_' + version + '.json';
+	
+	if (shouldSkipDownload(version, type)) {
+		console.log('Skipping ' + type + ' - already exists for version ' + version);
+		callback(null);
+		return;
+	}
+	
+	downloadReport(path, function (reportData) {
+		fs.writeFile(filename, reportData, err => {
+			if (err) { handleError(err) }
+			console.log(filename + ' saved');
+			callback(reportData);
+		});
+	});
+}
+
+function getExistingHourlyVersions() {
+	const existing = new Set();
+	if (fs.existsSync(archivesPath)) {
+		const files = fs.readdirSync(archivesPath);
+		for (const file of files) {
+			if (file.startsWith('boats_') && file.endsWith('.json')) {
+				const version = file.replace('boats_', '').replace('.json', '');
+				existing.add(parseInt(version, 10));
+			}
+		}
+	}
+	return existing;
+}
+
+// =================================== DOWNLOAD CURRENT DATA ========================
 
 // Download boats
 let boatsVersion = Math.floor(new Date().getTime() / 1000 / 5) * 5;
@@ -131,22 +180,22 @@ let boatsPath = trackerBasePath + 'live/v' + boatsVersion;
 
 console.log('Downloading boats...');
 downloadReport(boatsPath, function (reportData) {
-	fs.writeFile('./data/boats.json', reportData, err => {
-		if (err) { handleError(err) }
-		console.log('data/boats.json saved');
-	});
+  fs.writeFile('./data/boats.json', reportData, err => {
+    if (err) { handleError(err) }
+    console.log('data/boats.json saved');
+  });
 });
 
 // Download tracks
 getTracksVersion(function (tracksVersion) {
-	console.log('Downloading tracks...');
-	let tracksPath = trackerBasePath + 'tracks/v' + tracksVersion;
-	downloadReport(tracksPath, function (reportData) {
-		fs.writeFile('./data/tracks.json', reportData, err => {
-			if (err) { handleError(err) }
-			console.log('data/tracks.json saved');
-		});
-	});
+  console.log('Downloading tracks...');
+  let tracksPath = trackerBasePath + 'tracks/v' + tracksVersion;
+  downloadReport(tracksPath, function (reportData) {
+    fs.writeFile('./data/tracks.json', reportData, err => {
+      if (err) { handleError(err) }
+      console.log('data/tracks.json saved');
+    });
+  });
 });
 
 // Download config
