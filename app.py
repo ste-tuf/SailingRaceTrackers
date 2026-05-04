@@ -178,7 +178,7 @@ with tab1:
 
     # Build stats dataframe
     stats_data = []
-    for bid, boat_row in df_filtered.iterrows():
+    for _, boat_row in df_filtered.iterrows():
         boat_id = str(boat_row["boat"])
         hour_stats = precomputed_stats.get(boat_id, {})
 
