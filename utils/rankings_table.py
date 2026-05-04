@@ -36,9 +36,10 @@ def render(df_filtered, target_boat):
     )
 
     display_df = df_filtered.copy()
-    display_df["boatName"] = display_df["boatName"].apply(
-        lambda x: f"⭐ {x}" if target_boat.lower() in str(x).lower() else x
-    )
+    if target_boat:
+        display_df["boatName"] = display_df["boatName"].apply(
+            lambda x: f"⭐ {x}" if target_boat.lower() in str(x).lower() else x
+        )
 
     display_df = display_df.sort_values("dtf")
 

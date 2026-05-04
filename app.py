@@ -36,13 +36,15 @@ if rankings_df.empty:
 
 target_boat, selected_classes, show_target_only = sidebar.render(rankings_df, latest_timestamp, race_state)
 
+map_style = st.session_state.get("map_style", "open-street-map")
+
 tab1, tab2, tab3, tab4 = st.tabs(["🏆 Rankings", "🗺️ Tracks", "📊 Analysis", "📥 Export"])
 
 with tab1:
-    rankings_tab.render(rankings_df, selected_classes, target_boat, show_target_only, DATA_DIR)
+    rankings_tab.render(rankings_df, selected_classes, target_boat, show_target_only)
 
 with tab2:
-    tracks_tab.render(rankings_df, selected_classes, target_boat, show_target_only, tracks)
+    tracks_tab.render(rankings_df, selected_classes, target_boat, show_target_only, tracks, map_style)
 
 with tab3:
     analysis_tab.render(rankings_df, selected_classes, target_boat, show_target_only, reports_df, DATA_DIR)
