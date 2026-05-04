@@ -5,15 +5,12 @@ import pandas as pd
 import io
 from datetime import datetime
 
-from utils import create_gpx_with_metadata, gpx_to_bytes
+from utils import create_gpx_with_metadata, gpx_to_bytes, apply_filters
 
 
-def apply_filters(df, selected_classes, target_boat, show_target_only):
-    df_filtered = df.copy()
-    if selected_classes:
-        df_filtered = df_filtered[df_filtered["boatClass"].isin(selected_classes)]
-    if show_target_only and target_boat:
-        df_filtered = df_filtered[df_filtered["boatName"].str.contains(target_boat, case=False, na=False)]
+def render(rankings_df, selected_classes, target_boat, show_target_only, tracks, data_dir, geod):
+    df_filtered = apply_filters(rankings_df, selected_classes, target_boat, show_target_only)
+    
     df_filtered = df_filtered.copy()
     df_filtered["classType"] = df_filtered["category"].apply(
         lambda x: "Duo" if str(x).lower() == "duo" else "Solo"
@@ -22,11 +19,6 @@ def apply_filters(df, selected_classes, target_boat, show_target_only):
         df_filtered.groupby("classType")["dtf"].rank(method="min").astype(int)
     )
     df_filtered["overallRank"] = df_filtered["dtf"].rank(method="min").astype(int)
-    return df_filtered
-
-
-def render(rankings_df, selected_classes, target_boat, show_target_only, tracks, data_dir, geod):
-    df_filtered = apply_filters(rankings_df, selected_classes, target_boat, show_target_only)
     
     st.subheader("Export for Navigation Software")
 

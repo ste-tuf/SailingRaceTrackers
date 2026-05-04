@@ -7,16 +7,7 @@ import plotly.graph_objects as go
 import glob
 import os
 
-from utils import process_and_archive, reports_to_dataframe
-
-
-def apply_filters(df, selected_classes, target_boat, show_target_only):
-    df_filtered = df.copy()
-    if selected_classes:
-        df_filtered = df_filtered[df_filtered["boatClass"].isin(selected_classes)]
-    if show_target_only and target_boat:
-        df_filtered = df_filtered[df_filtered["boatName"].str.contains(target_boat, case=False, na=False)]
-    return df_filtered
+from utils import process_and_archive, reports_to_dataframe, apply_filters
 
 
 def render(rankings_df, selected_classes, target_boat, show_target_only, reports_df, data_dir):
