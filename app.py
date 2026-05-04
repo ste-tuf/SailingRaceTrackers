@@ -36,30 +36,24 @@ DATA_DIR = "data"
 @st.cache_data
 def load_all_data():
     """Load all data sources and merge them."""
-    # Lates boats data
     data_latest = CurrentRankings().load(f"{DATA_DIR}/boats.json")
 
-    # Load full tracks directly from boats_result.json (no downsampling)
     raw_results = load_json(f"{DATA_DIR}/boats_result.json")
     tracks = {
         bid: data.get("track", [])
         for bid, data in raw_results.get("result", {}).items()
     }
 
-    # Load raw tracks for timestamps
-    raw_tracks = load_json(f"{DATA_DIR}/tracks.json")
-
-    # Load boats.json once for history
-    latest_history = data_latest.get("reports", {}).get("history", [])
+    boats_json_raw = load_json(f"{DATA_DIR}/boats.json")
+    latest_history = boats_json_raw.get("reports", {}).get("history", [])
     latest_timestamp = latest_history[-1].get("date") if latest_history else None
 
-    # Load full reports history
-    history = reports_to_dataframe(f"{DATA_DIR}/reports.json")
+    reports_df = reports_to_dataframe(f"{DATA_DIR}/reports.json")
 
-    return data_latest, tracks, raw_tracks, latest_timestamp, boats_json, history
+    return data_latest, tracks, latest_timestamp, boats_json_raw, reports_df
 
 
-data_latest, tracks, raw_tracks, latest_timestamp, boats_json_history = load_all_data()
+data_latest, tracks, latest_timestamp, boats_json_history, reports_df = load_all_data()
 
 if data_latest.empty:
     st.error("No data found")
@@ -67,9 +61,41 @@ if data_latest.empty:
 
 # Sidebar controls
 st.sidebar.header("Settings")
-st.sidebar.caption(f"Data: {latest_timestamp or 'unknown'}")
 
-# Main filters
+if latest_timestamp:
+    try:
+        dt = datetime.fromisoformat(latest_timestamp.replace("Z", "+00:00"))
+        formatted_date = dt.strftime("%b %d, %Y at %H:%M")
+    except:
+        formatted_date = latest_timestamp
+else:
+    formatted_date = "Unknown"
+
+st.sidebar.markdown(f"**📅 Last Update:** {formatted_date}")
+
+race_state = boats_json_history.get("reports", {}).get("state", "UNKNOWN")
+state_emoji = {"RUNNING": "🟢", "FINISHED": "🏁", "PAUSED": "⏸️"}.get(race_state, "⚪")
+st.sidebar.markdown(f"**🏃 Race Status:** {state_emoji} {race_state}")
+
+history = boats_json_history.get("reports", {}).get("history", [])
+if history:
+    lines = history[-1].get("lines", [])
+    status_counts = {}
+    for line in lines:
+        status = line[BOAT_COLUMNS["racestatus"]]
+        status_counts[status] = status_counts.get(status, 0) + 1
+
+    rac_count = status_counts.get("RAC", 0)
+    dnf_count = status_counts.get("DNF", 0)
+    ret_count = status_counts.get("RET", 0)
+    sta_count = status_counts.get("STA", 0)
+
+    st.sidebar.markdown(
+        f"**🚤 Boats:** 🟢 RAC: {rac_count} | 🔴 DNF: {dnf_count} | 🟠 RET: {ret_count} | ⚪ STA: {sta_count}"
+    )
+
+st.sidebar.markdown("---")
+
 st.sidebar.subheader("Filters")
 
 # Target boat
