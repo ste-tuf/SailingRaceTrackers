@@ -11,6 +11,7 @@ def render(rankings_df, latest_timestamp, race_state):
     - target_boat
     - selected_classes
     - show_target_only
+    - map_style
     """
     st.sidebar.header("Settings")
 
@@ -29,16 +30,30 @@ def render(rankings_df, latest_timestamp, race_state):
     st.sidebar.subheader("Filters")
 
     all_boat_names = [""] + sorted(rankings_df["boatName"].dropna().unique().tolist())
+    default_idx = 0
+    for i, name in enumerate(all_boat_names):
+        if "TUF" in str(name).upper():
+            default_idx = i
+            break
     st.session_state.target_boat = st.sidebar.selectbox(
         "Target Boat", 
         all_boat_names, 
-        index=all_boat_names.index("TUF TUF") if "TUF TUF" in all_boat_names else 0
+        index=default_idx
     )
 
     all_classes = sorted(rankings_df["boatClass"].dropna().unique().tolist())
     st.session_state.selected_classes = st.sidebar.multiselect("Boat Class", all_classes, default=[])
 
     st.session_state.show_target_only = st.sidebar.checkbox("Show Target Boat Only", value=False)
+
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Map")
+
+    st.session_state.map_style = st.sidebar.selectbox(
+        "Style",
+        ["open-street-map", "carto-positron", "carto-darkmatter"],
+        index=0,
+    )
 
     st.sidebar.markdown("---")
     st.sidebar.caption("Sailing Race Tracker | Python + Streamlit")
