@@ -26,6 +26,7 @@ from .utils import (
     load_xml_config,
     save_json,
     BOAT_COLUMNS,
+    reports_to_dataframe,
 )
 from .gpx_utils import (
     create_gpx_track,
@@ -53,6 +54,7 @@ __all__ = [
     'load_xml_config',
     'save_json',
     'BOAT_COLUMNS',
+    'reports_to_dataframe',
     # GPX utils
     'create_gpx_track',
     'create_combined_gpx',

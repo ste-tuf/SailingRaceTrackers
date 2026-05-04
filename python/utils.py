@@ -8,6 +8,12 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 
+try:
+    import pandas as pd
+    HAS_PANDAS = True
+except ImportError:
+    HAS_PANDAS = False
+
 
 def load_xml_config(path: str) -> ET.Element:
     """
@@ -160,3 +166,42 @@ def get_column_value(line: list, column: str) -> Any:
     if idx is not None and idx < len(line):
         return line[idx]
     return None
+
+
+def reports_to_dataframe(reports_path: str) -> "pd.DataFrame":
+    """
+    Read reports.json and convert to a pandas DataFrame.
+    Each row represents a boat at a specific time point.
+    
+    Args:
+        reports_path: Path to reports.json file
+        
+    Returns:
+        DataFrame with columns: timestamp, snapshot_id, and all boat attributes
+    """
+    if not HAS_PANDAS:
+        raise ImportError("pandas is required for this function")
+    
+    data = load_json(reports_path)
+    history = data.get('reports', {}).get('history', [])
+    columns = data.get('reports', {}).get('columns', [])
+    
+    rows = []
+    for snapshot in history:
+        snapshot_id = snapshot.get('id')
+        timestamp = snapshot.get('date')
+        lines = snapshot.get('lines', [])
+        
+        for line in lines:
+            row = {
+                'snapshot_id': snapshot_id,
+                'timestamp': timestamp,
+            }
+            for i, col in enumerate(columns):
+                if i < len(line):
+                    row[col] = line[i]
+                else:
+                    row[col] = None
+            rows.append(row)
+    
+    return pd.DataFrame(rows)
