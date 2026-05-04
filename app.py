@@ -71,12 +71,6 @@ else:
 
 st.sidebar.markdown(f"**📅 Last Update:** {formatted_date}")
 
-state_emoji = {"RUNNING": "🟢", "FINISHED": "🏁", "PAUSED": "⏸️"}.get(race_state, "⚪")
-st.sidebar.markdown(f"**🏃 Race Status:** {state_emoji} {race_state}")
-
-rac_count = len(data_latest)
-st.sidebar.markdown(f"**🚤 Boats:** 🟢 RAC: {rac_count}")
-
 st.sidebar.markdown("---")
 
 st.sidebar.subheader("Filters")
