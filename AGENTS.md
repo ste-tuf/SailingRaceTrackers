@@ -9,38 +9,76 @@ streamlit run app.py
 ## Key Commands
 - `uv sync` - Install Python dependencies
 - `streamlit run app.py` - Launch the Streamlit web application
-- `python python/extract_current_rankings.py` - Extract rankings to JSON
 
 ## Project Structure
-- `app.py` - Streamlit web application (main entry point)
-- `python/` - Python package modules
-- `data/` - Data directory (boats.json, tracks.json, boats_result.json)
-- `pyproject.toml` - Python project configuration
+```
+SailingRaceTrackers/
+├── app.py              # Main entry point (thin - only orchestration)
+├── components/         # UI components (st.* calls)
+│   ├── sidebar.py      # Filter controls
+│   ├── rankings_tab.py # Rankings display
+│   ├── tracks_tab.py   # GPS tracks map
+│   ├── analysis_tab.py # Charts and analysis
+│   └── export_tab.py   # GPX export
+├── utils/              # Business logic (pure Python, no st.*)
+│   └── __init__.py     # Data loading functions
+├── python/             # Core package (data processing)
+│   ├── extract_current_rankings.py
+│   ├── sample_tracks_by_time.py
+│   ├── process_and_archive.py
+│   ├── utils.py
+│   └── gpx_utils.py
+├── data/               # Data directory
+└── pyproject.toml      # Python project configuration
+```
 
-## Python Modules
-- `python/extract_current_rankings.py` - Current rankings extraction
-- `python/sample_tracks_by_time.py` - Track sampling and stats
-- `python/process_and_archive.py` - Data archiving
-- `python/utils.py` - Shared utilities
+## Architecture Principles
+
+### 1. Keep app.py thin
+- Only orchestration (load data, call components)
+- No business logic
+
+### 2. Use @st.cache_data for data loading
+```python
+@st.cache_data
+def load_all_data():
+    rankings_df, race_state, latest_timestamp = load_latest_rankings(f"{DATA_DIR}/boats.json")
+    tracks = load_tracks_from_result(f"{DATA_DIR}/boats_result.json")
+    reports_df = reports_to_dataframe(f"{DATA_DIR}/reports.json")
+    return rankings_df, tracks, latest_timestamp, race_state, reports_df
+```
+
+### 3. Separate concerns clearly
+| Folder | What goes here |
+|--------|----------------|
+| app.py | Entry point - only st.* calls for layout |
+| components/ | Reusable UI - call st.* directly |
+| utils/ | Pure Python - no st.* calls |
+| python/ | Core package - data processing |
+
+### 4. Component pattern
+```python
+# components/sidebar.py
+import streamlit as st
+
+def render(rankings_df, latest_timestamp, race_state):
+    """Render sidebar - calls st.* directly."""
+    st.sidebar.header("Settings")
+    # ... controls
+    return target_boat, selected_classes, show_target_only
+```
+
+### 5. Import convention
+```python
+# app.py
+from utils import load_latest_rankings, load_tracks_from_result, reports_to_dataframe
+from components import sidebar, rankings_tab, tracks_tab, analysis_tab, export_tab
+```
 
 ## Important Notes
-- Each race has its own branch (`prod-*`). The active branch appears in `.github/workflows/generate-boats-result-template.yml`
-- The web app is served via Streamlit
-- Data is loaded from `data/` directory
-
-## Generated Output Format (boats_result.json)
-```json
-{
-  "result": {
-    "123": {
-      "sail": 123, "rank": 1, "heading": 245, "speed": 18.5,
-      "lat_dec": 46.275, "lon_dec": -1.475,
-      "dtf": 1234.5, "dtl": 0.0, "dtp": 45.2,
-      "track": [[lat, lon], ...]
-    }
-  }
-}
-```
+- Each race has its own branch (`prod-*`)
+- Data is loaded once at startup via @st.cache_data
+- Filter logic is in components, not app.py
 
 ## Dependencies
 - `streamlit` - Web application framework

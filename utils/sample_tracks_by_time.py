@@ -24,11 +24,6 @@ def get_precomputed_sailing_stats(boats_json_path: str) -> dict:
     """
     Get pre-computed sailing stats from boats.json history.
     
-    Column indices (from README):
-    [7] = heading (course), [8] = speed_knots, [9] = vmg_knots
-    [11] = heading4h, [12] = dist4h_nm, [13] = vmg4h, [14] = dog4h
-    [15] = heading24h, [16] = dist24h_nm, [17] = maxdist24h, [18] = vmg24h, [19] = dog24h
-    
     Args:
         boats_json_path: Path to boats.json
         
@@ -99,7 +94,6 @@ def compute_sailing_stats(
     if not track or len(track) < 2:
         return {"speed": None, "vmg": None, "tws": None, "twa": None}
     
-    # Check track format
     first = track[0]
     if isinstance(first, int):
         return {"speed": None, "vmg": None, "tws": None, "twa": None}
@@ -107,15 +101,10 @@ def compute_sailing_stats(
     if len(first) == 2:
         return {"speed": None, "vmg": None, "tws": None, "twa": None}
     
-    # tracks.json format: [timestamp, lat_offset, lon_offset], then [time_delta, lat_delta, lon_delta]
-    # Entry 0: absolute timestamp + lat/lon from origin (degrees * 100000)
-    # Subsequent: delta from PREVIOUS position (like generate-result.js does)
-    
     base_ts = track[0][0]
     base_lat = track[0][1] / 100000.0
     base_lon = track[0][2] / 100000.0
     
-    # Build timestamps - accumulate time deltas
     timestamps = []
     cum_time = 0
     timestamps.append(base_ts)
@@ -123,7 +112,6 @@ def compute_sailing_stats(
         cum_time += p[0]
         timestamps.append(cum_time + base_ts)
     
-    # Build absolute positions - accumulate (like generate-result.js)
     lats = [base_lat]
     lons = [base_lon]
     for p in track[1:]:
@@ -233,8 +221,6 @@ def sample_track_at_interval(
     if not track or len(track) == 0:
         return []
     
-    # For now, return simple sample - evenly distributed points
-    # More sophisticated timestamp-based sampling can be added
     n_points = len(track)
     step = max(1, n_points // (hours_back * 60 / interval_minutes) if hours_back else n_points // 10)
     
@@ -242,7 +228,6 @@ def sample_track_at_interval(
     for i in range(0, n_points, step):
         sampled.append(track[i])
     
-    # Always include last point
     if track[-1] not in sampled:
         sampled.append(track[-1])
     
@@ -297,139 +282,44 @@ def load_tracks_from_result(path: str) -> dict[str, list]:
     return tracks
 
 
-class TrackSampler:
+def sample_by_class(
+    boats_result_json_path: str,
+    patterns: list[str] | None = None,
+    hours_back: float | None = None,
+    interval_minutes: int = 30,
+    config_path: str | None = None
+) -> dict[str, list]:
     """
-    Sample GPS tracks over specified time intervals.
+    Sample tracks filtered by boat class.
     
-    Usage:
-        # Sample all tracks from last 4 hours at 30-min intervals
-        tracks = TrackSampler().sample_all(
-            "data/boats_result.json",
-            hours_back=4,
-            interval_minutes=30
-        )
+    Args:
+        boats_result_json_path: Path to boats_result.json
+        patterns: Regex patterns for class detection
+        hours_back: Optional hours back from now to sample from
+        interval_minutes: Sample interval in minutes
+        config_path: Path to config.xml for boat class lookup
         
-        # Sample only Figaro boats
-        figaro_tracks = TrackSampler().sample_by_class(
-            "data/boats_result.json",
-            patterns=[r'(?i)figaro'],
-            hours_back=24,
-            interval_minutes=60
-        )
+    Returns:
+        Dict of filtered and sampled tracks
     """
+    data = load_json(boats_result_json_path)
     
-    def sample_all(
-        self,
-        boats_result_json_path: str,
-        hours_back: float | None = None,
-        interval_minutes: int = 30
-    ) -> dict[str, list]:
-        """
-        Sample all boat tracks.
-        
-        Args:
-            boats_result_json_path: Path to boats_result.json
-            hours_back: Optional hours to sample from
-            interval_minutes: Sample interval in minutes
-            
-        Returns:
-            Dict of {boat_id: sampled_track}
-        """
-        tracks = load_tracks_from_result(boats_result_json_path)
-        return sample_tracks_at_interval(tracks, hours_back, interval_minutes)
+    boat_class_map = {}
+    if config_path:
+        boatinfo = extract_boat_info(config_path)
+        for bid, info in boatinfo.items():
+            boat_class_map[bid] = info.get('boatClass', '')
     
-    def sample_by_class(
-        self,
-        boats_result_json_path: str,
-        patterns: list[str] | None = None,
-        hours_back: float | None = None,
-        interval_minutes: int = 30,
-        class_key: str = 'boatClass',
-        config_path: str | None = None
-    ) -> dict[str, list]:
-        """
-        Sample tracks filtered by boat class.
-        
-        Args:
-            boats_result_json_path: Path to boats_result.json
-            patterns: Regex patterns for class detection
-            hours_back: Optional hours back from now to sample from
-            interval_minutes: Sample interval in minutes
-            class_key: Key containing boat class in data (if available)
-            config_path: Path to config.xml for boat class lookup
-            
-        Returns:
-            Dict of filtered and sampled tracks
-        """
-        data = load_json(boats_result_json_path)
-        
-        # Get boat class info from config if provided
-        boat_class_map = {}
-        if config_path:
-            boatinfo = extract_boat_info(config_path)
-            for bid, info in boatinfo.items():
-                boat_class_map[bid] = info.get('boatClass', '')
-        
-        # Filter boats
-        filtered = {}
-        for boat_id, boat_data in data.get('result', {}).items():
-            # Get boat class from config or data
-            boat_class = boat_class_map.get(boat_id, boat_data.get(class_key, ''))
-            if detect_figaro_class(str(boat_class), patterns=patterns if patterns else [r'(?i)figaro']):
-                filtered[boat_id] = boat_data
-        
-        tracks = {}
-        for boat_id, boat_data in filtered.items():
-            track = boat_data.get('track', [])
-            if track and len(track) > 0:
-                tracks[boat_id] = track
-        
-        return sample_tracks_at_interval(tracks, hours_back, interval_minutes)
+    filtered = {}
+    for boat_id, boat_data in data.get('result', {}).items():
+        boat_class = boat_class_map.get(boat_id, boat_data.get('boatClass', ''))
+        if detect_figaro_class(str(boat_class), patterns=patterns if patterns else [r'(?i)figaro']):
+            filtered[boat_id] = boat_data
     
-    def sample_one(
-        self,
-        track: list,
-        hours_back: float | None = None,
-        interval_minutes: int = 30
-    ) -> list:
-        """
-        Sample a single track.
-        
-        Args:
-            track: List of [lat, lon] coordinates
-            hours_back: Optional hours back to sample from
-            interval_minutes: Sample interval in minutes
-            
-        Returns:
-            Sampled track as list
-        """
-        return sample_track_at_interval(track, hours_back, interval_minutes)
+    tracks = {}
+    for boat_id, boat_data in filtered.items():
+        track = boat_data.get('track', [])
+        if track and len(track) > 0:
+            tracks[boat_id] = track
     
-    def get_figaro_tracks(
-        self,
-        boats_result_json_path: str,
-        hours_back: float | None = None,
-        interval_minutes: int = 30,
-        config_path: str | None = None
-    ) -> dict[str, list]:
-        """
-        Get sampled Figaro boat tracks.
-        
-        Convenience method using default Figaro patterns.
-        
-        Args:
-            boats_result_json_path: Path to boats_result.json
-            hours_back: Optional hours back
-            interval_minutes: Sample interval
-            config_path: Path to config.xml for boat class lookup
-            
-        Returns:
-            Dict of Figaro tracks
-        """
-        return self.sample_by_class(
-            boats_result_json_path,
-            patterns=[r'(?i)figaro'],
-            hours_back=hours_back,
-            interval_minutes=interval_minutes,
-            config_path=config_path
-        )
+    return sample_tracks_at_interval(tracks, hours_back, interval_minutes)

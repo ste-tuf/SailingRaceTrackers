@@ -92,12 +92,10 @@ def process_and_archive(
     Returns:
         Path to created archive file
     """
-    # Load data sources
     boats_json = load_json(boats_json_path)
     tracks_json = load_json(tracks_json_path)
     boatinfo = extract_boat_info(config_path)
     
-    # Get latest history entry
     history = boats_json.get('reports', {}).get('history', [])
     if not history:
         raise ValueError("No history data found in boats.json")
@@ -107,7 +105,6 @@ def process_and_archive(
     if not lines:
         raise ValueError("No lines data in latest history entry")
     
-    # Process each boat
     result = {}
     timestamp = latest.get('date', datetime.utcnow().isoformat())
     
@@ -118,11 +115,9 @@ def process_and_archive(
         
         boat_id = int(line[BOAT_COLUMNS['boat']])
         
-        # Find track
         track_data = find_track_by_id(tracks_json, boat_id)
         track = transform_track(track_data) if track_data else []
         
-        # Get boat info
         binfo = boatinfo.get(str(boat_id), {})
         
         result[str(boat_id)] = {
@@ -142,49 +137,10 @@ def process_and_archive(
             'timestamp': timestamp
         }
     
-    # Create output path with timestamp
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     ts_str = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
     output_path = os.path.join(output_dir, f'{ts_str}.json')
     
-    # Save archive
     save_json({'result': result, 'timestamp': timestamp}, output_path)
     
     return output_path
-
-
-class ProcessAndArchive:
-    """
-    Process race data and create timestamped archive.
-    
-    Usage:
-        arch_path = ProcessAndArchive().run(
-            "data/config.json", "data/boats.json", "data/tracks.json", "data/processed"
-        )
-    """
-    
-    def run(
-        self,
-        config_path: str = "data/config.json",
-        boats_json_path: str = "data/boats.json",
-        tracks_json_path: str = "data/tracks.json",
-        output_dir: str = "data/processed"
-    ) -> str:
-        """
-        Run the archive process.
-        
-        Args:
-            config_path: Path to XML config file
-            boats_json_path: Path to boats.json file
-            tracks_json_path: Path to tracks.json file
-            output_dir: Output directory for archived file
-            
-        Returns:
-            Path to created archive file
-        """
-        return process_and_archive(
-            config_path,
-            boats_json_path,
-            tracks_json_path,
-            output_dir
-        )
