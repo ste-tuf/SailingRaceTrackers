@@ -1,6 +1,13 @@
 const axios = require('axios');
 const fs = require('fs');
 
+// ================================ CONSTANTS =================================
+// Race parameters
+const geovoileHostname = 'cap-martinique.geovoile.com/';
+const resourcesBasePath = '/2026/resources/versions/';
+const trackerBasePath = '/2026/tracker/resources/';
+
+
 // ========================= TAKEN 'AS IS' FROM CHROME ========================
 // UInt8Array constructor implementation from Chrome, used to decode geovoile
 // responses is not available in nodeJS, so we directly copy this 
@@ -68,150 +75,69 @@ var UInt8Array = function (input) {
 	; return _0x7f4ax7
 }
 
-// ================================ CONSTANTS =================================
 
-const geovoileHostname = 'cap-martinique.geovoile.com/';
-const resourcesBasePath = '/2026/resources/versions/';
-const trackerBasePath = '/2026/tracker/resources/';
-const archivesPath = './data/historical/';
-const intervalsHours = 1;
-
-// ================================== UTILS ===================================
-
-function handleError(error) {
-	console.error(error);
-	process.exit(1)
-}
-
-function ensureHistoricalDir() {
-	if (!fs.existsSync(archivesPath)) {
-		fs.mkdirSync(archivesPath, { recursive: true });
-	}
-}
-
-function getHourlyVersion() {
-	return Math.floor(new Date().getTime() / 1000 / 60 / intervalsHours) * 60 * intervalsHours;
-}
+// ====================== MAIN ====================
+function handleError(error) { console.error(error); process.exit(1) }
 
 function geoVoileGet(path, callback) {
-	let url = 'https://' + geovoileHostname + path;
-	let options = {
-		method: 'get',
-		responseType: 'arraybuffer'
-	};
-
-	axios.get(url, options)
-		.then(response => {
-			callback(response.data);
-		})
-		.catch(error => {
-			handleError(error);
-		});
+	axios.get('https://' + geovoileHostname + path, { responseType: 'arraybuffer' })
+		.then(response => { callback(response.data); })
+		.catch(error => { handleError(error); });
 }
 
-function getTracksVersion(callback) {
-	let legPath = resourcesBasePath + 'v=' + new Date().getTime();
-
-	geoVoileGet(legPath, function (data) {
+function getVersion(type, callback) {
+	geoVoileGet(resourcesBasePath + 'v=' + new Date().getTime(), function (data) {
 		let resourcesVersions = eval("(" + data + ")");
-		callback(resourcesVersions['tracks']);
-	})
-}
-
-function getConfigVersion(callback) {
-	let legPath = resourcesBasePath + 'v=' + new Date().getTime();
-
-	geoVoileGet(legPath, function (data) {
-		let resourcesVersions = eval("(" + data + ")");
-		callback(resourcesVersions['config']);
+		callback(resourcesVersions[type]);
 	})
 }
 
 function downloadReport(path, callback) {
 	geoVoileGet(path, function (data) {
-		let uInt8Array = new UInt8Array(data);
-		let decodedData = new TextDecoder('utf-8').decode(uInt8Array);
+		let decodedData = new TextDecoder('utf-8').decode(new UInt8Array(data));
 		callback(decodedData);
 	})
 }
 
-function shouldSkipDownload(version, type) {
-	const filename = archivesPath + type + '_' + version + '.json';
-	return fs.existsSync(filename);
-}
+const args = process.argv.slice(2);
+const fullHistory = args.includes('--full-history');
 
-function downloadToHistorical(version, type, path, callback) {
-	const filename = archivesPath + type + '_' + version + '.json';
-	
-	if (shouldSkipDownload(version, type)) {
-		console.log('Skipping ' + type + ' - already exists for version ' + version);
-		callback(null);
-		return;
-	}
-	
-	downloadReport(path, function (reportData) {
-		fs.writeFile(filename, reportData, err => {
-			if (err) { handleError(err) }
-			console.log(filename + ' saved');
-			callback(reportData);
+function downloadData() {
+	let boatsVersion = Math.floor(new Date().getTime() / 1000 / 5) * 5;
+	console.log('Downloading boats...');
+	downloadReport(trackerBasePath + 'live/v' + boatsVersion, function (data) {
+		fs.writeFile('./data/boats.json', data, err => { if (err) handleError(err); console.log('data/boats.json saved'); });
+	});
+
+	getVersion('tracks', function (version) {
+		console.log('Downloading tracks...');
+		downloadReport(trackerBasePath + 'tracks/v' + version, function (data) {
+			fs.writeFile('./data/tracks.json', data, err => { if (err) handleError(err); console.log('data/tracks.json saved'); });
+		});
+	});
+
+	getVersion('config', function (version) {
+		console.log('Downloading config...');
+		downloadReport(trackerBasePath + 'config/v' + version, function (data) {
+			fs.access('./data/config.json', fs.constants.F_OK, (err) => {
+				if (err) {
+					fs.writeFile('./data/config.json', data, err => { if (err) handleError(err); console.log('data/config.json saved'); });
+				} else {
+					console.log('data/config.json already exists, skipping');
+				}
+			});
+		});
+	});
+
+	getVersion('reports', function (version) {
+		const reportsPath = fullHistory 
+			? trackerBasePath + 'reports/v' + version 
+			: trackerBasePath + 'live/v' + boatsVersion;
+		console.log(fullHistory ? 'Downloading full history...' : 'Downloading current report...');
+		downloadReport(reportsPath, function (data) {
+			fs.writeFile('./data/reports.json', data, err => { if (err) handleError(err); console.log('data/reports.json saved'); });
 		});
 	});
 }
 
-function getExistingHourlyVersions() {
-	const existing = new Set();
-	if (fs.existsSync(archivesPath)) {
-		const files = fs.readdirSync(archivesPath);
-		for (const file of files) {
-			if (file.startsWith('boats_') && file.endsWith('.json')) {
-				const version = file.replace('boats_', '').replace('.json', '');
-				existing.add(parseInt(version, 10));
-			}
-		}
-	}
-	return existing;
-}
-
-// =================================== DOWNLOAD CURRENT DATA ========================
-
-// Download boats
-let boatsVersion = Math.floor(new Date().getTime() / 1000 / 5) * 5;
-let boatsPath = trackerBasePath + 'live/v' + boatsVersion;
-
-console.log('Downloading boats...');
-downloadReport(boatsPath, function (reportData) {
-  fs.writeFile('./data/boats.json', reportData, err => {
-    if (err) { handleError(err) }
-    console.log('data/boats.json saved');
-  });
-});
-
-// Download tracks
-getTracksVersion(function (tracksVersion) {
-  console.log('Downloading tracks...');
-  let tracksPath = trackerBasePath + 'tracks/v' + tracksVersion;
-  downloadReport(tracksPath, function (reportData) {
-    fs.writeFile('./data/tracks.json', reportData, err => {
-      if (err) { handleError(err) }
-      console.log('data/tracks.json saved');
-    });
-  });
-});
-
-// Download config
-getConfigVersion(function (configVersion) {
-    console.log('Downloading config...');
-    let configPath = trackerBasePath + 'config/v' + configVersion;
-    downloadReport(configPath, function (reportData) {
-        fs.access('./data/config.json', fs.constants.F_OK, (err) => {
-            if (err) {
-                fs.writeFile('./data/config.json', reportData, err => {
-                    if (err) { handleError(err); }
-                    console.log('data/config.json saved');
-                });
-            } else {
-                console.log('data/config.json already exists, skipping');
-            }
-        });
-    });
-});
+downloadData();
