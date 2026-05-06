@@ -5,7 +5,7 @@ import pandas as pd
 import io
 from datetime import datetime
 
-from utils import create_gpx_with_metadata, gpx_to_bytes, apply_filters
+from utils import create_gpx_with_metadata, gpx_to_bytes, apply_filters, create_poi_gpx
 
 
 def render(rankings_df, selected_classes, target_boat, show_target_only, tracks, data_dir, geod):
@@ -19,54 +19,93 @@ def render(rankings_df, selected_classes, target_boat, show_target_only, tracks,
         df_filtered.groupby("classType")["dtf"].rank(method="min").astype(int)
     )
     df_filtered["overallRank"] = df_filtered["dtf"].rank(method="min").astype(int)
-    
-    st.subheader("Export for Navigation Software")
 
-    st.markdown("""
-Export boat tracks in GPX format (positions only) compatible with **NavimetriX**, **QTVLM**.
-""")
+    st.subheader("Export")
+
+    duo_boats = df_filtered[df_filtered["classType"] == "Duo"]
+    solo_boats = df_filtered[df_filtered["classType"] == "Solo"]
+
+    all_boats = df_filtered[["boat", "boatName"]].drop_duplicates()
+    boat_options = {f"{row['boatName']} ({row['boat']})": row['boat'] for _, row in all_boats.iterrows()}
+    
+    default_index = 0
+    if target_boat:
+        for idx, name in enumerate(list(boat_options.keys())):
+            if target_boat.lower() in name.lower():
+                default_index = idx
+                break
 
     col1, col2 = st.columns(2)
 
     with col1:
-        if st.button("Export Duo Boats (GPX)", width="stretch"):
-            try:
-                duo_boats = df_filtered[df_filtered["classType"] == "Duo"]
-                gpx = create_gpx_with_metadata(duo_boats, tracks)
-
-                gpx_data = io.BytesIO()
-                gpx_data.write(gpx_to_bytes(gpx))
-                gpx_data.seek(0)
-
-                st.download_button(
-                    label="Download Duo Boats GPX",
-                    data=gpx_data.getvalue(),
-                    file_name=f"duo_boats_{datetime.now().strftime('%Y%m%d_%H%M')}.gpx",
-                    mime="application/gpx+xml",
-                )
-                st.success(f"Exported {len(duo_boats)} Duo boats")
-            except Exception as e:
-                st.error(f"Error: {e}")
-
+        if st.button("Duo Track", key="btn_duo_track", use_container_width=True):
+            pass
     with col2:
-        if st.button("Export Solo Boats (GPX)", width="stretch"):
-            try:
-                solo_boats = df_filtered[df_filtered["classType"] == "Solo"]
-                gpx = create_gpx_with_metadata(solo_boats, tracks)
+        if st.button("Solo Track", key="btn_solo_track", use_container_width=True):
+            pass
 
-                gpx_data = io.BytesIO()
-                gpx_data.write(gpx_to_bytes(gpx))
-                gpx_data.seek(0)
+    col1, col2 = st.columns(2)
 
-                st.download_button(
-                    label="Download Solo Boats GPX",
-                    data=gpx_data.getvalue(),
-                    file_name=f"solo_boats_{datetime.now().strftime('%Y%m%d_%H%M')}.gpx",
-                    mime="application/gpx+xml",
-                )
-                st.success(f"Exported {len(solo_boats)} Solo boats")
-            except Exception as e:
-                st.error(f"Error: {e}")
+    with col1:
+        if st.button("Duo POI", key="btn_duo_poi", use_container_width=True):
+            pass
+    with col2:
+        if st.button("Solo POI", key="btn_solo_poi", use_container_width=True):
+            pass
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        selected_boat = st.selectbox(
+            "Select Boat", 
+            options=list(boat_options.keys()),
+            index=default_index,
+            key="selected_boat_export"
+        )
+        selected_boat_sail = boat_options[selected_boat]
+    with col2:
+        if st.button("Export Single Track", key="btn_single_track", use_container_width=True):
+            pass
+
+    export_type = None
+    gpx_data = None
+    filename = None
+
+    if st.session_state.get("btn_single_track"):
+        export_type = "Single Track"
+        single_boat = df_filtered[df_filtered["boat"] == selected_boat_sail]
+        gpx = create_gpx_with_metadata(single_boat, tracks)
+        gpx_data = io.BytesIO(gpx_to_bytes(gpx))
+        filename = f"track_{selected_boat_sail}_{datetime.now().strftime('%Y%m%d_%H%M')}.gpx"
+    elif st.session_state.get("btn_duo_track"):
+        export_type = "Duo Track"
+        gpx = create_gpx_with_metadata(duo_boats, tracks)
+        gpx_data = io.BytesIO(gpx_to_bytes(gpx))
+        filename = f"duo_track_{datetime.now().strftime('%Y%m%d_%H%M')}.gpx"
+    elif st.session_state.get("btn_solo_track"):
+        export_type = "Solo Track"
+        gpx = create_gpx_with_metadata(solo_boats, tracks)
+        gpx_data = io.BytesIO(gpx_to_bytes(gpx))
+        filename = f"solo_track_{datetime.now().strftime('%Y%m%d_%H%M')}.gpx"
+    elif st.session_state.get("btn_duo_poi"):
+        export_type = "Duo POI"
+        gpx = create_poi_gpx(duo_boats, tracks)
+        gpx_data = io.BytesIO(gpx_to_bytes(gpx))
+        filename = f"duo_poi_{datetime.now().strftime('%Y%m%d_%H%M')}.gpx"
+    elif st.session_state.get("btn_solo_poi"):
+        export_type = "Solo POI"
+        gpx = create_poi_gpx(solo_boats, tracks)
+        gpx_data = io.BytesIO(gpx_to_bytes(gpx))
+        filename = f"solo_poi_{datetime.now().strftime('%Y%m%d_%H%M')}.gpx"
+
+    if gpx_data and filename:
+        st.download_button(
+            label=f"Download {export_type}",
+            data=gpx_data.getvalue(),
+            file_name=filename,
+            mime="application/gpx+xml",
+            use_container_width=True,
+        )
 
     st.markdown("---")
 
