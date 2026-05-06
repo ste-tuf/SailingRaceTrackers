@@ -20,16 +20,15 @@ SailingRaceTrackers/
 │   ├── tracks_tab.py   # GPS tracks map
 │   ├── analysis_tab.py # Charts and analysis
 │   └── export_tab.py   # GPX export
-├── utils/              # Business logic (pure Python, no st.*)
-│   └── __init__.py     # Data loading functions
-├── python/             # Core package (data processing)
+├── utils/              # Core package (pure Python, no st.*)
+│   ├── __init__.py     # Data loading functions
 │   ├── extract_current_rankings.py
 │   ├── sample_tracks_by_time.py
 │   ├── process_and_archive.py
 │   ├── utils.py
 │   └── gpx_utils.py
 ├── data/               # Data directory
-└── pyproject.toml      # Python project configuration
+└── pyproject.toml     # Python project configuration
 ```
 
 ## Architecture Principles
@@ -54,7 +53,6 @@ def load_all_data():
 | app.py | Entry point - only st.* calls for layout |
 | components/ | Reusable UI - call st.* directly |
 | utils/ | Pure Python - no st.* calls |
-| python/ | Core package - data processing |
 
 ### 4. Component pattern
 ```python
