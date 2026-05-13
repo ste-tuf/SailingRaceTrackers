@@ -7,6 +7,7 @@ from .sample_tracks_by_time import load_tracks_from_result, get_precomputed_sail
 from .utils import reports_to_dataframe
 from .process_and_archive import process_and_archive
 from .gpx_utils import create_gpx_with_metadata, gpx_to_bytes, create_poi_gpx
+from .polar_model import build_polar_model, calculate_efficiency
 
 
 def apply_filters(df: pd.DataFrame, selected_classes: list, target_boat: str, show_target_only: bool) -> pd.DataFrame:
@@ -39,4 +40,6 @@ __all__ = [
     'create_poi_gpx',
     'get_precomputed_sailing_stats',
     'apply_filters',
+    'build_polar_model',
+    'calculate_efficiency',
 ]

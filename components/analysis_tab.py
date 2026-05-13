@@ -4,29 +4,62 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import glob
-import os
 
-from utils import process_and_archive, reports_to_dataframe, apply_filters
+from utils import reports_to_dataframe, apply_filters
 
 
-def render(rankings_df, selected_classes, target_boat, show_target_only, reports_df, data_dir):
+def render(rankings_df, selected_classes, target_boat, show_target_only, reports_df):
     df_filtered = apply_filters(rankings_df, selected_classes, target_boat, show_target_only)
-    
-    st.subheader("Race Analysis")
 
-    fig_scatter = px.scatter(
-        rankings_df,
-        x="dtf",
-        y="speed",
-        color="boatClass",
-        hover_name="boatName",
-        size="rank",
-        title="Speed vs Distance to Finish",
-    )
-    st.plotly_chart(fig_scatter, width="stretch")
+    col1, col2 = st.columns(2)
 
-    st.subheader("Rank History")
+    with col1:
+        st.subheader("Race Analysis")
+        if not target_boat or target_boat not in rankings_df["boatName"].values:
+            st.info("Select a target boat to analyze")
+        else:
+            target_row = rankings_df[rankings_df["boatName"].str.contains(target_boat, case=False, na=False)]
+            if target_row.empty:
+                st.info("Target boat not found in rankings")
+            else:
+                target_dtf = float(target_row["dtf"].iloc[0])
+                df_plot = df_filtered.copy()
+                df_plot["dtf_relative"] = df_plot["dtf"] - target_dtf
+                df_plot["is_target"] = df_plot["boatName"].str.contains(target_boat, case=False, na=False)
+
+                symbol_map = {False: "circle", True: "diamond-open"}
+                df_plot["symbol"] = df_plot["is_target"].map(symbol_map)
+
+                fig_speed = px.scatter(
+                    df_plot,
+                    x="dtf_relative",
+                    y="speed",
+                    color="boatClass",
+                    hover_name="boatName",
+                    size="rank",
+                    symbol="symbol",
+                    title=f"Current Speed vs Distance to Lead (0 = {target_boat})",
+                )
+
+                fig_speed.update_traces(marker=dict(size=14, line=dict(width=2, color="black")))
+                fig_speed.update_layout(xaxis_title="Distance to Lead (NM)", yaxis_title="Current Speed (knots)")
+                st.plotly_chart(fig_speed, width="stretch")
+                fig_scatter = px.scatter(
+                    df_plot,
+                    x="dtf_relative",
+                    y="dist24h",
+                    color="boatClass",
+                    hover_name="boatName",
+                    size="rank",
+                    symbol="symbol",
+                    title=f"24h Speed vs Distance to Lead (0 = {target_boat})",
+                )
+                fig_scatter.update_traces(marker=dict(size=14, line=dict(width=2, color="black")))
+                fig_scatter.update_layout(xaxis_title="Distance to Lead (NM)", yaxis_title="24h Speed (knots)")
+                st.plotly_chart(fig_scatter, width="stretch")
+
+    with col2:
+        st.subheader("Rank History")
 
     if not reports_df.empty:
         target_id = str(
@@ -60,6 +93,113 @@ def render(rankings_df, selected_classes, target_boat, show_target_only, reports
                 title=f"{target_boat} Distance to Finish Over Time",
             )
             st.plotly_chart(fig_dtf, width="stretch")
+
+    st.subheader("Estimated Polar")
+
+    if not reports_df.empty and target_boat:
+        target_id = str(
+            rankings_df[
+                rankings_df["boatName"].str.contains(target_boat, case=False, na=False)
+            ]["boat"].iloc[0]
+        )
+
+        target_history = reports_df[
+            (reports_df["boat"] == target_id) & (reports_df["racestatus"] == "RAC")
+        ].copy()
+
+        if not target_history.empty:
+            target_history = target_history.copy()
+            target_history["heading"] = pd.to_numeric(target_history["heading"], errors="coerce")
+            target_history["winddir"] = pd.to_numeric(target_history["winddir"], errors="coerce")
+            target_history["speed"] = pd.to_numeric(target_history["speed"], errors="coerce")
+            target_history["windspeed"] = pd.to_numeric(target_history["windspeed"], errors="coerce")
+
+            target_history = target_history.dropna(subset=["speed", "winddir"])
+            target_history = target_history[target_history["speed"] > 0]
+
+            if not target_history.empty:
+                target_history["windspeed_kts"] = target_history["windspeed"] / 10.0
+                target_history["twa"] = 180 - target_history["winddir"]
+
+                target_history["wind_band"] = pd.cut(
+                    target_history["windspeed_kts"],
+                    bins=[0, 8, 12, 18, 25, 100],
+                    labels=["0-8", "8-12", "12-18", "18-25", "25+"],
+                    ordered=True,
+                )
+
+                fig_polar = px.scatter_polar(
+                    target_history,
+                    r="speed",
+                    theta="twa",
+                    color="wind_band",
+                    title=f"{target_boat} Estimated Polar",
+                )
+                st.plotly_chart(fig_polar, width="stretch")
+
+                st.subheader("Efficiency Model")
+
+                target_history_model = target_history.copy()
+                target_history_model["windspeed_kts"] = target_history_model["windspeed"] / 10.0
+                target_history_model["twa"] = 180 - target_history_model["winddir"]
+
+                target_history_model["twa_bin"] = (
+                    (target_history_model["twa"] // 30).astype(int) * 30
+                ).clip(upper=150).astype(int)
+
+                polar_avg = target_history_model.groupby("twa_bin")["speed"].mean().reset_index()
+                polar_avg.columns = ["twa_bin", "model_speed"]
+
+                if not polar_avg.empty:
+                    latest_row = rankings_df[rankings_df["boatName"].str.contains(target_boat, case=False, na=False)]
+                    if not latest_row.empty:
+                        latest_twa_orig = float(latest_row["winddir"].iloc[0]) if "winddir" in latest_row.columns else 0
+                        latest_windspeed = float(latest_row["windspeed"].iloc[0]) if "windspeed" in latest_row.columns else 0
+                        latest_speed = float(latest_row["speed"].iloc[0])
+
+                        latest_twa = 180 - latest_twa_orig
+                        latest_twa_bin = int(min(150, max(0, round(latest_twa / 30) * 30)))
+                        model_row = polar_avg[polar_avg["twa_bin"] == latest_twa_bin]
+
+                        if not model_row.empty:
+                            model_speed = float(model_row["model_speed"].iloc[0])
+                            efficiency = (latest_speed / model_speed * 100) if model_speed > 0 else None
+                            if efficiency is not None:
+                                st.metric(
+                                    label=f"Current Efficiency ({latest_windspeed/10:.0f}kt, TWA {latest_twa:.0f}°)",
+                                    value=f"{efficiency:.1f}%",
+                                    delta=f"Speed: {latest_speed:.1f} / Model: {model_speed:.1f}",
+                                )
+
+                    efficiency_over_time = target_history.copy()
+                    efficiency_over_time["timestamp"] = pd.to_datetime(efficiency_over_time["timestamp"])
+                    efficiency_over_time = efficiency_over_time.sort_values("timestamp")
+
+                    efficiency_over_time["windspeed_kts"] = efficiency_over_time["windspeed"] / 10.0
+                    efficiency_over_time["twa"] = 180 - efficiency_over_time["winddir"]
+
+                    efficiency_over_time["twa_bin"] = (
+                        (efficiency_over_time["twa"] // 30).astype(int) * 30
+                    ).clip(upper=150).astype(int)
+
+                    efficiency_over_time = efficiency_over_time.merge(polar_avg, on="twa_bin", how="inner")
+
+                    if not efficiency_over_time.empty:
+                        efficiency_over_time["efficiency_pct"] = (
+                            efficiency_over_time["speed"] / efficiency_over_time["model_speed"]
+                        ) * 100
+                        efficiency_over_time = efficiency_over_time.dropna(subset=["efficiency_pct"])
+                        efficiency_over_time = efficiency_over_time.sort_values("timestamp")
+
+                        fig_eff = px.line(
+                            efficiency_over_time,
+                            x="timestamp",
+                            y="efficiency_pct",
+                            title=f"{target_boat} Efficiency Over Time",
+                        )
+                        fig_eff.add_hline(y=100, line_dash="dash", line_color="green", annotation_text="100%")
+                        fig_eff.update_layout(yaxis_title="Efficiency (%)", hovermode="x unified")
+                        st.plotly_chart(fig_eff, width="stretch")
 
     st.subheader("Speed Over Time")
 
@@ -135,26 +275,3 @@ def render(rankings_df, selected_classes, target_boat, show_target_only, reports
             st.info("Select at least one boat")
     else:
         st.info("No historical data available")
-
-    st.subheader("Process Data")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        if st.button("Create Archive"):
-            with st.spinner("Processing..."):
-                try:
-                    arch_path = process_and_archive(
-                        config_path=f"{data_dir}/config.json",
-                        boats_json_path=f"{data_dir}/boats.json",
-                        tracks_json_path=f"{data_dir}/tracks.json",
-                        output_dir=f"{data_dir}/processed",
-                    )
-                    st.success(f"Archive: {os.path.basename(arch_path)}")
-                except Exception as e:
-                    st.error(f"Error: {e}")
-
-    with col2:
-        archives = sorted(glob.glob(f"{data_dir}/processed/*.json"), reverse=True)
-        if archives:
-            st.caption(f"Latest: {os.path.basename(archives[0])}")
