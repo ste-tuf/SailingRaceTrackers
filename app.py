@@ -47,7 +47,7 @@ with tab2:
     tracks_tab.render(rankings_df, selected_classes, target_boat, show_target_only, tracks, map_style)
 
 with tab3:
-    analysis_tab.render(rankings_df, selected_classes, target_boat, show_target_only, reports_df, DATA_DIR)
+    analysis_tab.render(rankings_df, selected_classes, target_boat, show_target_only, reports_df)
 
 with tab4:
     export_tab.render(rankings_df, selected_classes, target_boat, show_target_only, tracks, DATA_DIR, _GEOD)

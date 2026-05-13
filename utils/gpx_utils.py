@@ -135,3 +135,44 @@ def gpx_to_bytes(gpx: gpxpy.gpx.GPX) -> bytes:
         XML bytes
     """
     return gpx.to_xml().encode("utf-8")
+
+
+def create_poi_gpx(
+    boats_df: Any,
+    tracks_dict: dict[str, list[list[float]]]
+) -> gpxpy.gpx.GPX:
+    """
+    Create GPX with waypoints (POI) for latest positions only.
+    Compatible with QTVLM and other navigation software.
+    
+    Args:
+        boats_df: DataFrame with boat info
+        tracks_dict: Dict of {boat_id: [[lat, lon], ...]}
+        
+    Returns:
+        GPX object with waypoints
+    """
+    gpx = gpxpy.gpx.GPX()
+    gpx.name = "Race POI"
+    
+    for _, boat in boats_df.iterrows():
+        boat_id = str(boat["boat"])
+        track = tracks_dict.get(boat_id, [])
+        if not track:
+            continue
+        
+        last_point = track[-1]
+        lat, lon = last_point[0], last_point[1]
+        
+        gpx_waypoint = gpxpy.gpx.GPXWaypoint(
+            lat, lon,
+            name=f"{boat['boatName']}",
+            description=(
+                f"Voile: {boat['boat']} | Rank: {boat['overallRank']} | "
+                f"DTF: {boat['dtf']:.1f} nm | DTL: {boat['dtl']:.1f} nm | "
+                f"Speed: {boat['speed']:.1f} kt"
+            )
+        )
+        gpx.waypoints.append(gpx_waypoint)
+    
+    return gpx

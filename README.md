@@ -75,12 +75,18 @@ SailingRaceTrackers utilise une **interface Streamlit** pour la visualisation in
 ```
 SailingRaceTrackers/
 ├── app.py                          # Application Streamlit (interface web)
-├── python/                        # Package Python
-│   ├── __init__.py               # Exports des modules
+├── utils/                          # Package Python
+│   ├── __init__.py                 # Exports des modules
 │   ├── extract_current_rankings.py # Extraction des classements
-│   ├── sample_tracks_by_time.py   # Échantillonnage des trajectoires
-│   ├── process_and_archive.py    # Archivage des données
-│   └── utils.py                  # Utilitaires partagés
+│   ├── sample_tracks_by_time.py    # Échantillonnage des trajectoires
+│   ├── process_and_archive.py     # Archivage des données
+│   └── utils.py                   # Utilitaires partagés
+├── components/                    # Composants Streamlit
+│   ├── sidebar.py                  # Filtres et paramètres
+│   ├── rankings_tab.py           # Tableau des classements
+│   ├── tracks_tab.py             # Carte des trajectoires
+│   ├── analysis_tab.py           # Graphiques d'analyse
+│   └── export_tab.py              # Export GPX
 ├── data/                         # Données de la course
 │   ├── boats.json                # Données brutes des bateaux
 │   ├── tracks.json              # Données des trajectoires
@@ -199,13 +205,13 @@ Pour les opérations de traitement de données en lot :
 
 ```bash
 # Extraire les classements actuels
-python -c "from python import CurrentRankings; r = CurrentRankings(); print(r.load('data/boats.json'))"
+python -c "from utils import extract_current_rankings; r = extract_current_rankings(); print(r.load('data/boats.json'))"
 
 # Échantillonner les trajectoires
-python -c "from python import TrackSampler; s = TrackSampler(); print(s.sample_all_tracks())"
+python -c "from utils import sample_tracks_by_time; s = sample_tracks_by_time(); print(s.sample_all_tracks())"
 
 # Créer une archive
-python -c "from python import ProcessAndArchive; p = ProcessAndArchive(); p.run('data/config.json', 'data/boats.json', 'data/tracks.json', 'data/processed')"
+python -c "from utils import process_and_archive; p = process_and_archive(); p.run('data/config.json', 'data/boats.json', 'data/tracks.json', 'data/processed')"
 ```
 
 ##### Courses disponibles
